@@ -1,0 +1,11 @@
+.pio
+.cache
+.pioenvs
+.piolibdeps
+.vscode
+/platformio_override.ini
+/build_output
+.DS_Store
+.clang-format
+node_modules
+.idea
