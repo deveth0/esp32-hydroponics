@@ -83,9 +83,8 @@
 // Global Variable definitions
 HYDROPONICS_GLOBAL char versionString[] _INIT(TOSTRING(HYDROPONICS_VERSION));
 
-// AP and OTA default passwords (for maximum security change them!)
+// AP default passwords (for maximum security change them!)
 HYDROPONICS_GLOBAL char apPass[65]  _INIT(HYDROPONICS_AP_PASS);
-HYDROPONICS_GLOBAL char otaPass[33] _INIT(DEFAULT_OTA_PASS);
 
 // internal global variable declarations
 // wifi

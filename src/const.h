@@ -5,7 +5,6 @@
 #define DEFAULT_CLIENT_SSID "Your_Network"
 #define DEFAULT_AP_SSID "HYDROPONICS-AP"
 #define DEFAULT_AP_PASS "hydro1234"
-#define DEFAULT_OTA_PASS "hydroota"
 
 //Access point behavior
 #define AP_BEHAVIOR_BOOT_NO_CONN          0     //Open AP when no connection after boot
