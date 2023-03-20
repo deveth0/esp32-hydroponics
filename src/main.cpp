@@ -1,19 +1,26 @@
+#define HYDROPONICS_DEFINE_GLOBAL_VARS // only in one source file, main.cpp!
+
+#include "main.h"
 #include <Arduino.h>
 
-#define LED 2
-
-void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(115200);
-  pinMode(LED, OUTPUT);
+Hydroponics::Hydroponics()
+{
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  digitalWrite(LED, HIGH);
+void Hydroponics::reset()
+{
+  ESP.restart();
+}
+
+void Hydroponics::loop()
+{
   Serial.println("LED is on");
-  delay(1000);
-  digitalWrite(LED, LOW);
-  Serial.println("LED is off");
+  yield();
   delay(1000);
 }
+
+void Hydroponics::setup()
+{
+  Serial.begin(115200);
+}
+
