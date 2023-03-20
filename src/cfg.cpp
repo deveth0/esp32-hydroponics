@@ -83,14 +83,13 @@ bool deserializeConfig(JsonObject doc, bool fromFS) {
   if (fromFS) return needsSave;
   // if from /json/cfg
   doReboot = doc[F("rb")] | doReboot;
-  if (doInitBusses) return false; // no save needed, will do after bus init in wled.cpp loop
   return (doc["sv"] | true);
 }
 
 void deserializeConfigFromFS() {
   bool success = deserializeConfigSec();
   if (!success) { //if file does not exist, try reading from EEPROM
-    #ifdef WLED_ADD_EEPROM_SUPPORT
+    #ifdef HYDROPONICS_ADD_EEPROM_SUPPORT
     deEEPSettings();
     return;
     #endif
@@ -103,14 +102,11 @@ void deserializeConfigFromFS() {
   success = readObjectFromFile("/cfg.json", nullptr, &doc);
   if (!success) { // if file does not exist, optionally try reading from EEPROM and then save defaults to FS
     releaseJSONBufferLock();
-    #ifdef WLED_ADD_EEPROM_SUPPORT
+    #ifdef HYDROPONICS_ADD_EEPROM_SUPPORT
     deEEPSettings();
     #endif
 
     // save default values to /cfg.json
-    // call readFromConfig() with an empty object so that usermods can initialize to defaults prior to saving
-    JsonObject empty = JsonObject();
-    usermods.readFromConfig(empty);
     serializeConfig();
     return;
   }
@@ -192,7 +188,7 @@ void serializeConfig() {
   if_ntp[F("lt")] = latitude;
 
 
-  File f = WLED_FS.open("/cfg.json", "w");
+  File f = HYDROPONICS_FS.open("/cfg.json", "w");
   if (f) serializeJson(doc, f);
   f.close();
   releaseJSONBufferLock();
@@ -218,25 +214,8 @@ bool deserializeConfigSec() {
   JsonObject ap = doc["ap"];
   getStringFromJson(apPass, ap["psk"] , 65);
 
-  JsonObject interfaces = doc["if"];
-
-#ifdef WLED_ENABLE_MQTT
-  JsonObject if_mqtt = interfaces["mqtt"];
+  JsonObject if_mqtt = doc["mqtt"];
   getStringFromJson(mqttPass, if_mqtt["psk"], 65);
-#endif
-
-#ifndef WLED_DISABLE_HUESYNC
-  getStringFromJson(hueApiKey, interfaces["hue"][F("key")], 47);
-#endif
-
-  getStringFromJson(settingsPIN, doc["pin"], 5);
-  correctPIN = !strlen(settingsPIN);
-
-  JsonObject ota = doc["ota"];
-  getStringFromJson(otaPass, ota[F("pwd")], 33);
-  CJSON(otaLock, ota[F("lock")]);
-  CJSON(wifiLock, ota[F("lock-wifi")]);
-  CJSON(aOtaEnabled, ota[F("aota")]);
 
   releaseJSONBufferLock();
   return true;
@@ -257,25 +236,10 @@ void serializeConfigSec() {
   JsonObject ap = doc.createNestedObject("ap");
   ap["psk"] = apPass;
 
-  JsonObject interfaces = doc.createNestedObject("if");
-#ifdef WLED_ENABLE_MQTT
-  JsonObject if_mqtt = interfaces.createNestedObject("mqtt");
+  JsonObject if_mqtt = doc.createNestedObject("mqtt");
   if_mqtt["psk"] = mqttPass;
-#endif
-#ifndef WLED_DISABLE_HUESYNC
-  JsonObject if_hue = interfaces.createNestedObject("hue");
-  if_hue[F("key")] = hueApiKey;
-#endif
 
-  doc["pin"] = settingsPIN;
-
-  JsonObject ota = doc.createNestedObject("ota");
-  ota[F("pwd")] = otaPass;
-  ota[F("lock")] = otaLock;
-  ota[F("lock-wifi")] = wifiLock;
-  ota[F("aota")] = aOtaEnabled;
-
-  File f = WLED_FS.open("/wsec.json", "w");
+  File f = HYDROPONICS_FS.open("/wsec.json", "w");
   if (f) serializeJson(doc, f);
   f.close();
   releaseJSONBufferLock();

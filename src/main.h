@@ -3,7 +3,8 @@
 
 #define VERSION 2303200
 
-#define HYDROPONICS__DEBUG
+#define HYDROPONICS_DEBUG
+#define HYDROPONICS_DEBUG_FS
 
 #include <Arduino.h>
 #include <HardwareSerial.h> // ensure we have the correct "Serial" on new MCUs (depends on ARDUINO_USB_MODE and ARDUINO_USB_CDC_ON_BOOT)
@@ -13,6 +14,7 @@
 #include <AsyncTCP.h>
 #include <Wire.h>
 #include <SPI.h>
+#include <LittleFS.h>
 
 #include <ArduinoJson.h>
 #include <AsyncMqttClient.h>
@@ -28,6 +30,7 @@
 #include "util.h"
 #include "improv.h"
 #include "cfg.h"
+#include "file.h"
 
 #ifndef CLIENT_SSID
 #define CLIENT_SSID DEFAULT_CLIENT_SSID
@@ -50,6 +53,8 @@
 #define HYDROPONICS_AP_PASS DEFAULT_AP_PASS
 #endif
 
+#define HYDROPONICS_FS LittleFS
+
 // GLOBAL VARIABLES
 // both declared and defined in header (solution from http://www.keil.com/support/docs/1868.htm)
 //
@@ -68,6 +73,15 @@
 #define _INIT_N(x) UNPACK x
 #endif
 
+#define STRINGIFY(X) #X
+#define TOSTRING(X) STRINGIFY(X)
+
+#ifndef HYDROPONICS_VERSION
+  #define HYDROPONICS_VERSION "dev"
+#endif
+
+// Global Variable definitions
+HYDROPONICS_GLOBAL char versionString[] _INIT(TOSTRING(HYDROPONICS_VERSION));
 
 // AP and OTA default passwords (for maximum security change them!)
 HYDROPONICS_GLOBAL char apPass[65]  _INIT(HYDROPONICS_AP_PASS);
@@ -80,6 +94,13 @@ HYDROPONICS_GLOBAL bool forceReconnect _INIT(false);
 HYDROPONICS_GLOBAL uint32_t lastReconnectAttempt _INIT(0);
 HYDROPONICS_GLOBAL bool interfacesInited _INIT(false);
 HYDROPONICS_GLOBAL bool wasConnected _INIT(false);
+
+HYDROPONICS_GLOBAL char ntpServerName[33] _INIT("0.wled.pool.ntp.org");   // NTP server to use
+// Time CONFIG
+HYDROPONICS_GLOBAL bool ntpEnabled _INIT(false);    // get internet time. Only required if you use clock overlays or time-activated macros
+HYDROPONICS_GLOBAL bool useAMPM _INIT(false);       // 12h/24h clock format
+HYDROPONICS_GLOBAL byte currentTimezone _INIT(0);   // Timezone ID. Refer to timezones array in wled10_ntp.ino
+HYDROPONICS_GLOBAL int utcOffsetSecs _INIT(0);      // Seconds to offset from UTC before timzone calculation
 
 // WiFi CONFIG (all these can be changed via web UI, no need to set them here)
 HYDROPONICS_GLOBAL char clientSSID[33] _INIT(CLIENT_SSID);
@@ -105,6 +126,23 @@ HYDROPONICS_GLOBAL unsigned long ntpPacketSentTime _INIT(999000000L);
 HYDROPONICS_GLOBAL IPAddress ntpServerIP;
 HYDROPONICS_GLOBAL uint16_t ntpLocalPort _INIT(2390);
 HYDROPONICS_GLOBAL uint16_t rolloverMillis _INIT(0);
+HYDROPONICS_GLOBAL float longitude _INIT(0.0);
+HYDROPONICS_GLOBAL float latitude _INIT(0.0);
+
+
+// General filesystem
+HYDROPONICS_GLOBAL size_t fsBytesUsed _INIT(0);
+HYDROPONICS_GLOBAL size_t fsBytesTotal _INIT(0);
+HYDROPONICS_GLOBAL unsigned long presetsModifiedTime _INIT(0L);
+HYDROPONICS_GLOBAL JsonDocument* fileDoc;
+HYDROPONICS_GLOBAL bool doCloseFile _INIT(false);
+
+
+HYDROPONICS_GLOBAL byte errorFlag _INIT(0);
+
+HYDROPONICS_GLOBAL bool doSerializeConfig _INIT(false);        // flag to initiate saving of config
+HYDROPONICS_GLOBAL bool doReboot          _INIT(false);        // flag to initiate reboot from async handlers
+HYDROPONICS_GLOBAL bool doPublishMqtt     _INIT(false);
 
 // network
 HYDROPONICS_GLOBAL bool udpConnected _INIT(false);
@@ -157,6 +195,11 @@ HYDROPONICS_GLOBAL uint16_t udpPort    _INIT(21324); // WLED notifier default po
   } while(0)
 
 
+// global ArduinoJson buffer
+HYDROPONICS_GLOBAL StaticJsonDocument<JSON_BUFFER_SIZE> doc;
+HYDROPONICS_GLOBAL volatile uint8_t jsonBufferLock _INIT(0);
+
+
 #define DEBUGOUT Serial
 
 #ifdef HYDROPONICS_DEBUG
@@ -170,6 +213,15 @@ HYDROPONICS_GLOBAL uint16_t udpPort    _INIT(21324); // WLED notifier default po
   #define DEBUG_PRINTF(x...)
 #endif
 
+#ifdef HYDROPONICS_DEBUG_FS
+  #define DEBUGFS_PRINT(x) DEBUGOUT.print(x)
+  #define DEBUGFS_PRINTLN(x) DEBUGOUT.println(x)
+  #define DEBUGFS_PRINTF(x...) DEBUGOUT.printf(x)
+#else
+  #define DEBUGFS_PRINT(x)
+  #define DEBUGFS_PRINTLN(x)
+  #define DEBUGFS_PRINTF(x...)
+#endif
 
 
 class Hydroponics
