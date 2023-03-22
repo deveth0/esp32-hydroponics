@@ -3,7 +3,6 @@
 #include "main.h"
 #include <Arduino.h>
 
-
 Hydroponics::Hydroponics()
 {
   oneWire = OneWire(tempPin);
@@ -19,19 +18,16 @@ void Hydroponics::loop()
 {
   handleConnection();
   yield();
-  dallasTemperature.requestTemperatures(); 
-  float temperatureC = dallasTemperature.getTempCByIndex(0);
-  Serial.println(temperatureC);
-  delay(5000);
+  handleSensors();
 }
 
 void Hydroponics::setup()
 {
   Serial.begin(115200);
 
-  #if defined(WLED_DEBUG) && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3) || ARDUINO_USB_CDC_ON_BOOT)
-  delay(2500);  // allow CDC USB serial to initialise
-  #endif
+#if defined(WLED_DEBUG) && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3) || ARDUINO_USB_CDC_ON_BOOT)
+  delay(2500); // allow CDC USB serial to initialise
+#endif
 
   DEBUG_PRINTLN();
   DEBUG_PRINT(F("---HYDROPONICS "));
@@ -43,7 +39,8 @@ void Hydroponics::setup()
   bool fsinit = false;
   DEBUGFS_PRINTLN(F("Mount FS"));
   fsinit = HYDROPONICS_FS.begin(true);
-  if (!fsinit) {
+  if (!fsinit)
+  {
     DEBUGFS_PRINTLN(F("FS failed!"));
     errorFlag = ERR_FS_BEGIN;
   }
@@ -63,18 +60,38 @@ void Hydroponics::setup()
   if (strcmp(clientSSID, DEFAULT_CLIENT_SSID) == 0)
     showWelcomePage = true;
   WiFi.persistent(false);
-  
+
   // fill in unique mdns default
-  if (strcmp(cmDNS, "x") == 0) sprintf_P(cmDNS, PSTR("hydroponics-%*s"), 6, escapedMac.c_str() + 6);
-  if (mqttDeviceTopic[0] == 0) sprintf_P(mqttDeviceTopic, PSTR("hydroponics/%*s"), 6, escapedMac.c_str() + 6);
-  if (mqttClientID[0] == 0)    sprintf_P(mqttClientID, PSTR("HYDROPONICS-%*s"), 6, escapedMac.c_str() + 6);
+  if (strcmp(cmDNS, "x") == 0)
+    sprintf_P(cmDNS, PSTR("hydroponics-%*s"), 6, escapedMac.c_str() + 6);
+  if (mqttDeviceTopic[0] == 0)
+    sprintf_P(mqttDeviceTopic, PSTR("hydroponics/%*s"), 6, escapedMac.c_str() + 6);
+  if (mqttClientID[0] == 0)
+    sprintf_P(mqttClientID, PSTR("HYDROPONICS-%*s"), 6, escapedMac.c_str() + 6);
 
   // HTTP server page init
   initServer();
 
+  dallasTemperature.begin();
+}
 
-  //dallasTemperature.begin();
+void Hydroponics::handleSensors()
+{
 
+  timer = millis();
+  if (timer - lastTemperatureMeasure >= TemperatureInterval * 1000)
+  {
+    lastTemperatureMeasure = timer;
+
+    dallasTemperature.requestTemperatures();
+
+    float temperatureC = dallasTemperature.getTempCByIndex(0);
+
+    if (temperatureC != lastTemperature)
+    {
+      publishMqtt("temperature", String(temperatureC, 2).c_str());
+    }
+  }
 }
 
 void Hydroponics::handleConnection()
@@ -87,16 +104,19 @@ void Hydroponics::handleConnection()
   if (now < 2000 && (!HYDROPONICS_WIFI_CONFIGURED || apBehavior == AP_BEHAVIOR_ALWAYS))
     return;
 
-  if (lastReconnectAttempt == 0) {
+  if (lastReconnectAttempt == 0)
+  {
     DEBUG_PRINTLN(F("lastReconnectAttempt == 0"));
     initConnection();
     return;
   }
 
   // reconnect WiFi to clear stale allocations if heap gets too low
-  if (now - heapTime > 5000) {
+  if (now - heapTime > 5000)
+  {
     uint32_t heap = ESP.getFreeHeap();
-    if (heap < MIN_HEAP_SIZE && lastHeap < MIN_HEAP_SIZE) {
+    if (heap < MIN_HEAP_SIZE && lastHeap < MIN_HEAP_SIZE)
+    {
       DEBUG_PRINT(F("Heap too low! "));
       DEBUG_PRINTLN(heap);
       forceReconnect = true;
@@ -106,24 +126,28 @@ void Hydroponics::handleConnection()
   }
 
   byte stac = 0;
-  if (apActive) {
+  if (apActive)
+  {
     wifi_sta_list_t stationList;
     esp_wifi_ap_get_sta_list(&stationList);
     stac = stationList.num;
 
-    if (stac != stacO) {
+    if (stac != stacO)
+    {
       stacO = stac;
       DEBUG_PRINT(F("Connected AP clients: "));
       DEBUG_PRINTLN(stac);
-      if (!HYDROPONICS_CONNECTED && HYDROPONICS_WIFI_CONFIGURED) {        // trying to connect, but not connected
+      if (!HYDROPONICS_CONNECTED && HYDROPONICS_WIFI_CONFIGURED)
+      { // trying to connect, but not connected
         if (stac)
-          WiFi.disconnect();        // disable search so that AP can work
+          WiFi.disconnect(); // disable search so that AP can work
         else
-          initConnection();         // restart search
+          initConnection(); // restart search
       }
     }
   }
-  if (forceReconnect) {
+  if (forceReconnect)
+  {
     DEBUG_PRINTLN(F("Forcing reconnect."));
     initConnection();
     interfacesInited = false;
@@ -131,41 +155,53 @@ void Hydroponics::handleConnection()
     wasConnected = false;
     return;
   }
-  if (!Network.isConnected()) {
-    if (interfacesInited) {
+  if (!Network.isConnected())
+  {
+    if (interfacesInited)
+    {
       DEBUG_PRINTLN(F("Disconnected!"));
       interfacesInited = false;
       initConnection();
     }
-    //send improv failed 6 seconds after second init attempt (24 sec. after provisioning)
-    if (improvActive > 2 && now - lastReconnectAttempt > 6000) {
+    // send improv failed 6 seconds after second init attempt (24 sec. after provisioning)
+    if (improvActive > 2 && now - lastReconnectAttempt > 6000)
+    {
       sendImprovStateResponse(0x03, true);
       improvActive = 2;
     }
-    if (now - lastReconnectAttempt > ((stac) ? 300000 : 18000) && HYDROPONICS_WIFI_CONFIGURED) {
-      if (improvActive == 2) improvActive = 3;
+    if (now - lastReconnectAttempt > ((stac) ? 300000 : 18000) && HYDROPONICS_WIFI_CONFIGURED)
+    {
+      if (improvActive == 2)
+        improvActive = 3;
       DEBUG_PRINTLN(F("Last reconnect too old."));
       initConnection();
     }
-    if (!apActive && now - lastReconnectAttempt > 12000 && (!wasConnected || apBehavior == AP_BEHAVIOR_NO_CONN)) {
+    if (!apActive && now - lastReconnectAttempt > 12000 && (!wasConnected || apBehavior == AP_BEHAVIOR_NO_CONN))
+    {
       DEBUG_PRINTLN(F("Not connected AP."));
       initAP();
     }
-  } else if (!interfacesInited) { //newly connected
+  }
+  else if (!interfacesInited)
+  { // newly connected
     DEBUG_PRINTLN("");
     DEBUG_PRINT(F("Connected! IP address: "));
     DEBUG_PRINTLN(Network.localIP());
-    if (improvActive) {
-      if (improvError == 3) sendImprovStateResponse(0x00, true);
+    if (improvActive)
+    {
+      if (improvError == 3)
+        sendImprovStateResponse(0x00, true);
       sendImprovStateResponse(0x04);
-      if (improvActive > 1) sendImprovRPCResponse(0x01);
+      if (improvActive > 1)
+        sendImprovRPCResponse(0x01);
     }
     initInterfaces();
 
     lastMqttReconnectAttempt = 0; // force immediate update
 
     // shut down AP
-    if (apBehavior != AP_BEHAVIOR_ALWAYS && apActive) {
+    if (apBehavior != AP_BEHAVIOR_ALWAYS && apActive)
+    {
       dnsServer.stop();
       WiFi.softAPdisconnect(true);
       apActive = false;
@@ -174,11 +210,12 @@ void Hydroponics::handleConnection()
   }
 }
 
-
-void Hydroponics::initInterfaces(){
+void Hydroponics::initInterfaces()
+{
 
   // Set up mDNS responder:
-  if (strlen(cmDNS) > 0) {
+  if (strlen(cmDNS) > 0)
+  {
     // "end" must be called before "begin" is called a 2nd time
     // see https://github.com/esp8266/Arduino/issues/7213
     MDNS.end();
@@ -189,19 +226,20 @@ void Hydroponics::initInterfaces(){
     MDNS.addService("wled", "tcp", 80);
     MDNS.addServiceTxt("wled", "tcp", "mac", escapedMac.c_str());
   }
-  server.begin(); 
+  server.begin();
 
-  if (udpPort > 0 && udpPort != ntpLocalPort) {
-      udpConnected = notifierUdp.begin(udpPort);
+  if (udpPort > 0 && udpPort != ntpLocalPort)
+  {
+    udpConnected = notifierUdp.begin(udpPort);
   }
 
   if (ntpEnabled)
     ntpConnected = ntpUdp.begin(ntpLocalPort);
 
+  initMqtt();
 
   interfacesInited = true;
   wasConnected = true;
-
 }
 
 void Hydroponics::initAP(bool resetAP)
@@ -209,7 +247,8 @@ void Hydroponics::initAP(bool resetAP)
   if (apBehavior == AP_BEHAVIOR_BUTTON_ONLY && !resetAP)
     return;
 
-  if (resetAP) {
+  if (resetAP)
+  {
     HYDROPONICS_SET_AP_SSID();
     strcpy_P(apPass, PSTR(HYDROPONICS_AP_PASS));
   }
@@ -222,7 +261,8 @@ void Hydroponics::initAP(bool resetAP)
   {
     DEBUG_PRINTLN(F("Init AP interfaces"));
     server.begin();
-    if (udpPort > 0 && udpPort != ntpLocalPort) {
+    if (udpPort > 0 && udpPort != ntpLocalPort)
+    {
       udpConnected = notifierUdp.begin(udpPort);
     }
 
@@ -235,25 +275,35 @@ void Hydroponics::initAP(bool resetAP)
 void Hydroponics::initConnection()
 {
 
-  WiFi.disconnect(true);        // close old connections
+  WiFi.disconnect(true); // close old connections
 
-  if (staticIP[0] != 0 && staticGateway[0] != 0) {
+  if (staticIP[0] != 0 && staticGateway[0] != 0)
+  {
     WiFi.config(staticIP, staticGateway, staticSubnet, IPAddress(1, 1, 1, 1));
-  } else {
+  }
+  else
+  {
     WiFi.config(IPAddress((uint32_t)0), IPAddress((uint32_t)0), IPAddress((uint32_t)0));
   }
 
   lastReconnectAttempt = millis();
 
-  if (!HYDROPONICS_WIFI_CONFIGURED) {
+  if (!HYDROPONICS_WIFI_CONFIGURED)
+  {
     DEBUG_PRINTLN(F("No connection configured."));
-    if (!apActive) initAP();        // instantly go to ap mode
+    if (!apActive)
+      initAP(); // instantly go to ap mode
     return;
-  } else if (!apActive) {
-    if (apBehavior == AP_BEHAVIOR_ALWAYS) {
+  }
+  else if (!apActive)
+  {
+    if (apBehavior == AP_BEHAVIOR_ALWAYS)
+    {
       DEBUG_PRINTLN(F("Access point ALWAYS enabled."));
       initAP();
-    } else {
+    }
+    else
+    {
       DEBUG_PRINTLN(F("Access point disabled (init)."));
       WiFi.softAPdisconnect(true);
       WiFi.mode(WIFI_STA);
