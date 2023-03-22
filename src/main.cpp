@@ -3,8 +3,11 @@
 #include "main.h"
 #include <Arduino.h>
 
+
 Hydroponics::Hydroponics()
 {
+  oneWire = OneWire(tempPin);
+  dallasTemperature = DallasTemperature(&oneWire);
 }
 
 void Hydroponics::reset()
@@ -14,15 +17,21 @@ void Hydroponics::reset()
 
 void Hydroponics::loop()
 {
-  
-  Serial.println("LED is on");
   handleConnection();
   yield();
+  dallasTemperature.requestTemperatures(); 
+  float temperatureC = dallasTemperature.getTempCByIndex(0);
+  Serial.println(temperatureC);
+  delay(5000);
 }
 
 void Hydroponics::setup()
 {
   Serial.begin(115200);
+
+  #if defined(WLED_DEBUG) && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3) || ARDUINO_USB_CDC_ON_BOOT)
+  delay(2500);  // allow CDC USB serial to initialise
+  #endif
 
   DEBUG_PRINTLN();
   DEBUG_PRINT(F("---HYDROPONICS "));
@@ -31,6 +40,15 @@ void Hydroponics::setup()
   DEBUG_PRINT(VERSION);
   DEBUG_PRINTLN(F(" INIT---"));
 
+  bool fsinit = false;
+  DEBUGFS_PRINTLN(F("Mount FS"));
+  fsinit = HYDROPONICS_FS.begin(true);
+  if (!fsinit) {
+    DEBUGFS_PRINTLN(F("FS failed!"));
+    errorFlag = ERR_FS_BEGIN;
+  }
+
+  updateFSInfo();
 
   // generate module IDs must be done before AP setup
   escapedMac = WiFi.macAddress();
@@ -50,6 +68,12 @@ void Hydroponics::setup()
   if (strcmp(cmDNS, "x") == 0) sprintf_P(cmDNS, PSTR("hydroponics-%*s"), 6, escapedMac.c_str() + 6);
   if (mqttDeviceTopic[0] == 0) sprintf_P(mqttDeviceTopic, PSTR("hydroponics/%*s"), 6, escapedMac.c_str() + 6);
   if (mqttClientID[0] == 0)    sprintf_P(mqttClientID, PSTR("HYDROPONICS-%*s"), 6, escapedMac.c_str() + 6);
+
+  // HTTP server page init
+  initServer();
+
+
+  //dallasTemperature.begin();
 
 }
 
@@ -136,6 +160,8 @@ void Hydroponics::handleConnection()
       sendImprovStateResponse(0x04);
       if (improvActive > 1) sendImprovRPCResponse(0x01);
     }
+    initInterfaces();
+
     lastMqttReconnectAttempt = 0; // force immediate update
 
     // shut down AP
@@ -148,6 +174,35 @@ void Hydroponics::handleConnection()
   }
 }
 
+
+void Hydroponics::initInterfaces(){
+
+  // Set up mDNS responder:
+  if (strlen(cmDNS) > 0) {
+    // "end" must be called before "begin" is called a 2nd time
+    // see https://github.com/esp8266/Arduino/issues/7213
+    MDNS.end();
+    MDNS.begin(cmDNS);
+
+    DEBUG_PRINTLN(F("mDNS started"));
+    MDNS.addService("http", "tcp", 80);
+    MDNS.addService("wled", "tcp", 80);
+    MDNS.addServiceTxt("wled", "tcp", "mac", escapedMac.c_str());
+  }
+  server.begin(); 
+
+  if (udpPort > 0 && udpPort != ntpLocalPort) {
+      udpConnected = notifierUdp.begin(udpPort);
+  }
+
+  if (ntpEnabled)
+    ntpConnected = ntpUdp.begin(ntpLocalPort);
+
+
+  interfacesInited = true;
+  wasConnected = true;
+
+}
 
 void Hydroponics::initAP(bool resetAP)
 {

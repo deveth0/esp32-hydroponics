@@ -42,6 +42,8 @@ void handleImprovPacket() {
 
   //dbgf = HYDROPONICS_FS.open("/improv.log","a");
 
+  DEBUG_PRINTLN();
+  DEBUG_PRINT("Handle improv packet");  
   bool timeout = false;
   uint8_t waitTime = 25;
   uint16_t packetByte = 0;

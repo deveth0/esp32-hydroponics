@@ -16,6 +16,9 @@
 #include <SPI.h>
 #include <LittleFS.h>
 
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
 #include <ArduinoJson.h>
 #include <AsyncMqttClient.h>
 
@@ -31,6 +34,7 @@
 #include "improv.h"
 #include "cfg.h"
 #include "file.h"
+#include "hydroponics_server.h"
 
 #ifndef CLIENT_SSID
 #define CLIENT_SSID DEFAULT_CLIENT_SSID
@@ -54,6 +58,9 @@
 #endif
 
 #define HYDROPONICS_FS LittleFS
+
+constexpr uint8_t tempPin = 25;
+constexpr uint8_t tdsPin = 36;
 
 // GLOBAL VARIABLES
 // both declared and defined in header (solution from http://www.keil.com/support/docs/1868.htm)
@@ -113,9 +120,10 @@ HYDROPONICS_GLOBAL IPAddress staticIP      _INIT_N(((  0,   0,  0,  0))); // sta
 HYDROPONICS_GLOBAL IPAddress staticGateway _INIT_N(((  0,   0,  0,  0))); // gateway (router) IP
 HYDROPONICS_GLOBAL IPAddress staticSubnet  _INIT_N(((255, 255, 255, 0))); // most common subnet in home networks
 
-
 // dns server
 HYDROPONICS_GLOBAL DNSServer dnsServer;
+
+HYDROPONICS_GLOBAL byte cacheInvalidate       _INIT(0); 
 
 // network time
 HYDROPONICS_GLOBAL bool ntpConnected _INIT(false);
@@ -226,6 +234,9 @@ HYDROPONICS_GLOBAL volatile uint8_t jsonBufferLock _INIT(0);
 class Hydroponics
 {
 public:
+  OneWire oneWire;
+  DallasTemperature dallasTemperature;
+
   Hydroponics();
   static Hydroponics &instance()
   {
@@ -243,6 +254,7 @@ public:
 
   void initAP(bool resetAP = false);
   void initConnection();
-
+  void initInterfaces();
 };
 #endif // MAIN_H
+
