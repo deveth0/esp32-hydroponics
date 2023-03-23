@@ -73,6 +73,8 @@ void Hydroponics::setup()
   initServer();
 
   dallasTemperature.begin();
+  pinMode(phPin, INPUT);
+  pinMode(tdsPin, INPUT);
 }
 
 void Hydroponics::handleSensors()
@@ -86,10 +88,40 @@ void Hydroponics::handleSensors()
     dallasTemperature.requestTemperatures();
 
     float temperatureC = dallasTemperature.getTempCByIndex(0);
+    temperatureC = roundf(temperatureC * 10) / 10;
 
     if (temperatureC != lastTemperature)
     {
+      DEBUGFS_PRINTF("new temperature %f °C\n", temperatureC);
       publishMqtt("temperature", String(temperatureC, 2).c_str());
+      lastTemperature = temperatureC;
+    }
+
+    float tdsRead = analogRead(tdsPin);
+    float averageVoltage = tdsRead * (float)3.3 / 4095.0; // read the analog value more stable by the median filtering algorithm, and convert to voltage value
+
+    float compensationCoefficient = 1.0 + 0.02 * (temperatureC - 25.0);                                                                                                                    // temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
+    float compensationVolatge = averageVoltage / compensationCoefficient;                                                                                                                  // temperature compensation
+    float tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge - 255.86 * compensationVolatge * compensationVolatge + 857.39 * compensationVolatge) * 0.5; // convert voltage value to tds value
+
+    tdsValue = roundf(tdsValue / 100) * 100;
+
+    if (tdsValue != lastTds)
+    {
+      DEBUGFS_PRINTF("new tds %f ppm\n", tdsValue);
+      publishMqtt("tds", String(tdsValue, 2).c_str());
+      lastTds = tdsValue;
+    }
+
+    float phVoltage = analogRead(tdsPin) * (5.0 / 4095.0);
+    float phValue = mapfloat(phVoltage, 0.0, 5.0, 14, 0);
+    phValue = roundf(phValue * 10) / 10;
+
+    if (phValue != lastPh)
+    {
+      DEBUGFS_PRINTF("new ph %f\n", phValue);
+      publishMqtt("ph", String(phValue, 2).c_str());
+      lastPh = phValue;
     }
   }
 }

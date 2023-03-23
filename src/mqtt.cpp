@@ -86,11 +86,14 @@ void _createMqttSensor(const String &name, const String &topic, const String &de
 }
 
 void publishMqtt(const char *topic, const char* state) {
+      DEBUG_PRINTF("Publish mqtt %s\n", state);
       //Check if MQTT Connected, otherwise it will crash the 8266
       if (HYDROPONICS_MQTT_CONNECTED){
         char subuf[128];
         snprintf_P(subuf, 127, PSTR("%s/%s"), mqttDeviceTopic, topic);
         mqtt->publish(subuf, 0, false, state);
+      } else {
+        DEBUG_PRINTLN("MQTT not connected");
       }
     }
 

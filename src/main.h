@@ -61,7 +61,8 @@
 #define HYDROPONICS_FS LittleFS
 
 constexpr uint8_t tempPin = 25;
-constexpr uint8_t tdsPin = 36;
+constexpr uint8_t phPin = 26;
+constexpr uint8_t tdsPin = 39;
 
 // GLOBAL VARIABLES
 // both declared and defined in header (solution from http://www.keil.com/support/docs/1868.htm)
@@ -259,5 +260,7 @@ private:
   long lastTemperatureMeasure = 0;
     // Track previous sensor values
   float lastTemperature;
+  float lastPh;
+  float lastTds;
 };
 #endif // MAIN_H
