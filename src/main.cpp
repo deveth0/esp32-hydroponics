@@ -19,6 +19,8 @@ void Hydroponics::loop()
   handleConnection();
   yield();
   handleSensors();
+
+  if (apActive) dnsServer.processNextRequest();
 }
 
 void Hydroponics::setup()

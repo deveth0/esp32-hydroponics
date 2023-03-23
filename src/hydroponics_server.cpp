@@ -36,11 +36,10 @@ bool captivePortal(AsyncWebServerRequest *request)
     return false;
   hostH = request->getHeader("Host")->value();
 
-  DEBUG_PRINTLN(hostH);
-
-  if (!isIp(hostH) && hostH.indexOf("4.3.2.1") < 0 && hostH.indexOf(cmDNS) < 0)
+  DEBUG_PRINTF("Captive portal %s\n", hostH);
+    
+  if (!isIp(hostH) && hostH.indexOf("hydroponic.me") < 0 && hostH.indexOf(cmDNS) < 0)
   {
-    DEBUG_PRINTLN("Captive portal");
     AsyncWebServerResponse *response = request->beginResponse(302);
     response->addHeader(F("Location"), F("http://4.3.2.1"));
     request->send(response);
@@ -86,10 +85,26 @@ void initServer()
 
 void serveIndexOrWelcome(AsyncWebServerRequest *request)
 {
-  serveIndex(request);
+    if (!showWelcomePage){
+    serveIndex(request);
+  } else {
+    serveWelcome(request);
+  }
 }
 
+void serveWelcome(AsyncWebServerRequest* request)
+{
 
+  if (handleFileRead(request, "/welcome.htm")) return;
+  
+  AsyncWebServerResponse *response;
+  response = request->beginResponse_P(200, "text/html", PAGE_welcome,       PAGE_welcome_length);
+
+  response->addHeader(FPSTR(s_content_enc),"gzip");
+  setStaticContentCacheHeaders(response);
+  request->send(response);
+
+}
 void serveIndex(AsyncWebServerRequest* request)
 {
   if (handleFileRead(request, "/index.htm")) return;

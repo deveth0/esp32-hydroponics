@@ -4,6 +4,7 @@
 bool captivePortal(AsyncWebServerRequest *request);
 void serveIndexOrWelcome(AsyncWebServerRequest *request);
 void serveIndex(AsyncWebServerRequest* request);
+void serveWelcome(AsyncWebServerRequest* request);
 void initServer();
 
 #endif
