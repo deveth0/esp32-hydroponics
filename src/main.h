@@ -36,6 +36,7 @@
 #include "file.h"
 #include "hydroponics_server.h"
 #include "mqtt.h"
+#include "settings.h"
 
 #ifndef CLIENT_SSID
 #define CLIENT_SSID DEFAULT_CLIENT_SSID
@@ -138,6 +139,10 @@ HYDROPONICS_GLOBAL uint16_t rolloverMillis _INIT(0);
 HYDROPONICS_GLOBAL float longitude _INIT(0.0);
 HYDROPONICS_GLOBAL float latitude _INIT(0.0);
 
+// Temp buffer
+HYDROPONICS_GLOBAL char* obuf;
+HYDROPONICS_GLOBAL uint16_t olen _INIT(0);
+
 // General filesystem
 HYDROPONICS_GLOBAL size_t fsBytesUsed _INIT(0);
 HYDROPONICS_GLOBAL size_t fsBytesTotal _INIT(0);
@@ -152,7 +157,6 @@ HYDROPONICS_GLOBAL bool doReboot _INIT(false);          // flag to initiate rebo
 HYDROPONICS_GLOBAL bool doPublishMqtt _INIT(false);
 
 // network
-HYDROPONICS_GLOBAL bool udpConnected _INIT(false);
 HYDROPONICS_GLOBAL String escapedMac;
 
 // improv
@@ -187,10 +191,10 @@ HYDROPONICS_GLOBAL char serverDescription[33] _INIT(SERVERNAME); // use predefin
 HYDROPONICS_GLOBAL AsyncWebServer server _INIT_N(((80)));
 
 // udp interface objects
-HYDROPONICS_GLOBAL WiFiUDP notifierUdp;
 HYDROPONICS_GLOBAL WiFiUDP ntpUdp;
 
-HYDROPONICS_GLOBAL uint16_t udpPort _INIT(21324); // WLED notifier default port
+HYDROPONICS_GLOBAL String messageHead, messageSub;
+HYDROPONICS_GLOBAL byte optionType;
 
 #define HYDROPONICS_WIFI_CONFIGURED (strlen(clientSSID) >= 1 && strcmp(clientSSID, DEFAULT_CLIENT_SSID) != 0)
 
@@ -228,6 +232,9 @@ HYDROPONICS_GLOBAL volatile uint8_t jsonBufferLock _INIT(0);
 #define DEBUGFS_PRINTLN(x)
 #define DEBUGFS_PRINTF(x...)
 #endif
+
+//macro to convert F to const
+#define SET_F(x)  (const char*)F(x)
 
 class Hydroponics
 {

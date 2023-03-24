@@ -21,13 +21,23 @@ void Hydroponics::loop()
   handleSensors();
 
   if (apActive) dnsServer.processNextRequest();
+
+  if (doSerializeConfig) serializeConfig();
+
+  if (doReboot) // if busses have to be inited & saved, wait until next iteration
+    reset();
+
+  if (doCloseFile) {
+    closeFile();
+    yield();
+  }
 }
 
 void Hydroponics::setup()
 {
   Serial.begin(115200);
 
-#if defined(WLED_DEBUG) && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3) || ARDUINO_USB_CDC_ON_BOOT)
+#if defined(HYDROPONICS_DEBUG) && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3) || ARDUINO_USB_CDC_ON_BOOT)
   delay(2500); // allow CDC USB serial to initialise
 #endif
 
@@ -262,11 +272,6 @@ void Hydroponics::initInterfaces()
   }
   server.begin();
 
-  if (udpPort > 0 && udpPort != ntpLocalPort)
-  {
-    udpConnected = notifierUdp.begin(udpPort);
-  }
-
   if (ntpEnabled)
     ntpConnected = ntpUdp.begin(ntpLocalPort);
 
@@ -295,10 +300,6 @@ void Hydroponics::initAP(bool resetAP)
   {
     DEBUG_PRINTLN(F("Init AP interfaces"));
     server.begin();
-    if (udpPort > 0 && udpPort != ntpLocalPort)
-    {
-      udpConnected = notifierUdp.begin(udpPort);
-    }
 
     dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     dnsServer.start(53, "*", WiFi.softAPIP());

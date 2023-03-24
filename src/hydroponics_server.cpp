@@ -1,13 +1,10 @@
 #include "main.h"
 
-#include "html_ui.h"
-#include "html_other.h"
-
 /*
  * Integrated HTTP web server page declarations
  */
 
-bool handleIfNoneMatchCacheHeader(AsyncWebServerRequest* request);
+bool handleIfNoneMatchCacheHeader(AsyncWebServerRequest *request);
 void setStaticContentCacheHeaders(AsyncWebServerResponse *response);
 
 // define flash strings once (saves flash memory)
@@ -37,7 +34,7 @@ bool captivePortal(AsyncWebServerRequest *request)
   hostH = request->getHeader("Host")->value();
 
   DEBUG_PRINTF("Captive portal %s\n", hostH);
-    
+
   if (!isIp(hostH) && hostH.indexOf("hydroponic.me") < 0 && hostH.indexOf(cmDNS) < 0)
   {
     AsyncWebServerResponse *response = request->beginResponse(302);
@@ -55,13 +52,21 @@ void initServer()
   DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Methods"), "*");
   DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Headers"), "*");
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     if (captivePortal(request)) return;
-    serveIndexOrWelcome(request);
-  });
+    serveIndexOrWelcome(request); });
+
+  // settings page
+  server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request)
+            { serveSettings(request, false); });
+
+  server.on("/settings", HTTP_POST, [](AsyncWebServerRequest *request)
+            { serveSettings(request, true); });
 
   // called when the url is not defined here, ajax-in; get-settings
-  server.onNotFound([](AsyncWebServerRequest *request){
+  server.onNotFound([](AsyncWebServerRequest *request)
+                    {
     DEBUG_PRINTLN("Not-Found HTTP call:");
     DEBUG_PRINTLN("URI: " + request->url());
     if (captivePortal(request))
@@ -75,69 +80,191 @@ void initServer()
       request->send(response);
       return;
     }
-
-    AsyncWebServerResponse *response = request->beginResponse_P(404, "text/html", PAGE_404, PAGE_404_length);
-    response->addHeader(FPSTR(s_content_enc), "gzip");
-    setStaticContentCacheHeaders(response);
-    request->send(response);
-  });
+    handleFileRead(request, "/404.htm"); });
 }
 
 void serveIndexOrWelcome(AsyncWebServerRequest *request)
 {
-    if (!showWelcomePage){
+  if (!showWelcomePage)
+  {
     serveIndex(request);
-  } else {
+  }
+  else
+  {
     serveWelcome(request);
   }
 }
 
-void serveWelcome(AsyncWebServerRequest* request)
+void serveWelcome(AsyncWebServerRequest *request)
 {
-
-  if (handleFileRead(request, "/welcome.htm")) return;
-  
-  AsyncWebServerResponse *response;
-  response = request->beginResponse_P(200, "text/html", PAGE_welcome,       PAGE_welcome_length);
-
-  response->addHeader(FPSTR(s_content_enc),"gzip");
-  setStaticContentCacheHeaders(response);
-  request->send(response);
-
+  handleFileRead(request, "/welcome.htm");
 }
-void serveIndex(AsyncWebServerRequest* request)
-{
-  if (handleFileRead(request, "/index.htm")) return;
 
-  if (handleIfNoneMatchCacheHeader(request)) return;
+void serveIndex(AsyncWebServerRequest *request)
+{
+  handleFileRead(request, "/index.htm");
+}
+
+void serveSettings(AsyncWebServerRequest *request, bool post)
+{
+  byte subPage = 0, originalSubPage = 0;
+  const String &url = request->url();
+
+  if (url.indexOf("sett") >= 0)
+  {
+    if (url.indexOf(".js") > 0)
+      subPage = 254;
+    else if (url.indexOf(".css") > 0)
+      subPage = 253;
+    else if (url.indexOf("wifi") > 0)
+      subPage = 1;
+    else if (url.indexOf("sync") > 0)
+      subPage = 4;
+  }
+  else
+    subPage = 255; // welcome page
+
+  if (post)
+  { // settings/set POST request, saving
+    DEBUG_PRINTF("Handle POST %s (%i)", url, subPage);
+
+    handleSettingsSet(request, subPage);
+
+    char s[32];
+    char s2[45] = "";
+
+    switch (subPage)
+    {
+    case 1:
+      strcpy_P(s, PSTR("WiFi"));
+      strcpy_P(s2, PSTR("Please connect to the new IP (if changed)"));
+      forceReconnect = true;
+      break;
+    case 4:
+      strcpy_P(s, PSTR("Sync"));
+      break;
+    }
+
+    strcat_P(s, PSTR(" settings saved."));
+
+    if (!s2[0])
+      strcpy_P(s2, s_redirecting);
+
+    serveMessage(request, 200, s, s2, (subPage == 1 || (subPage == 6 && doReboot)) ? 129 : 1);
+    return;
+  }
+
+  DEBUG_PRINTF("Subpage: %i, requested %s\n", subPage, url);
 
   AsyncWebServerResponse *response;
-  response = request->beginResponse_P(200, "text/html", PAGE_index, PAGE_index_L);
-
-  response->addHeader(FPSTR(s_content_enc),"gzip");
+  switch (subPage)
+  {
+  case 1:
+    handleFileRead(request, "/settings_wifi.htm");
+    return;
+  case 4:
+    handleFileRead(request, "/settings_sync.htm");
+    return;
+  case 254:
+    serveSettingsJS(request);
+    return;
+  case 255:
+    handleFileRead(request, "/welcome.htm");
+    return;
+  default:
+    handleFileRead(request, "/settings.htm");
+    return;
+  }
+  response->addHeader(FPSTR(s_content_enc), "gzip");
   setStaticContentCacheHeaders(response);
   request->send(response);
+}
+
+void serveMessage(AsyncWebServerRequest *request, uint16_t code, const String &headl, const String &subl, byte optionT)
+{
+  messageHead = headl;
+  messageSub = subl;
+  optionType = optionT;
+
+  request->send(HYDROPONICS_FS, "/msg.htm", "text/html", false, msgProcessor);
+}
+
+String msgProcessor(const String &var)
+{
+  if (var == "MSG")
+  {
+    String messageBody = messageHead;
+    messageBody += F("</h2>");
+    messageBody += messageSub;
+    uint32_t optt = optionType;
+
+    if (optt < 60) // redirect to settings after optionType seconds
+    {
+      messageBody += F("<script>setTimeout(RS,");
+      messageBody += String(optt * 1000);
+      messageBody += F(")</script>");
+    }
+    else if (optt < 120) // redirect back after optionType-60 seconds, unused
+    {
+      // messageBody += "<script>setTimeout(B," + String((optt-60)*1000) + ")</script>";
+    }
+    else if (optt < 180) // reload parent after optionType-120 seconds
+    {
+      messageBody += F("<script>setTimeout(RP,");
+      messageBody += String((optt - 120) * 1000);
+      messageBody += F(")</script>");
+    }
+    else if (optt == 253)
+    {
+      messageBody += F("<br><br><form action=/settings><button class=\"bt\" type=submit>Back</button></form>"); // button to settings
+    }
+    else if (optt == 254)
+    {
+      messageBody += F("<br><br><button type=\"button\" class=\"bt\" onclick=\"B()\">Back</button>");
+    }
+    return messageBody;
+  }
+  return String();
+}
+
+void serveSettingsJS(AsyncWebServerRequest *request)
+{
+  char buf[SETTINGS_STACK_BUF_SIZE + 37];
+  buf[0] = 0;
+  byte subPage = request->arg(F("p")).toInt();
+  if (subPage > 10)
+  {
+    strcpy_P(buf, PSTR("alert('Settings for this request are not implemented.');"));
+    request->send(501, "application/javascript", buf);
+    return;
+  }
+
+  strcat_P(buf, PSTR("function GetV(){var d=document;"));
+  getSettingsJS(subPage, buf + strlen(buf)); // this may overflow by 35bytes!!!
+  strcat_P(buf, PSTR("}"));
+  request->send(200, "application/javascript", buf);
 }
 
 void setStaticContentCacheHeaders(AsyncWebServerResponse *response)
 {
   char tmp[12];
-  // https://medium.com/@codebyamir/a-web-developers-guide-to-browser-caching-cc41f3b73e7c
-  #ifndef WLED_DEBUG
-  //this header name is misleading, "no-cache" will not disable cache,
-  //it just revalidates on every load using the "If-None-Match" header with the last ETag value
-  response->addHeader(F("Cache-Control"),"no-cache");
-  #else
-  response->addHeader(F("Cache-Control"),"no-store,max-age=0"); // prevent caching if debug build
-  #endif
+// https://medium.com/@codebyamir/a-web-developers-guide-to-browser-caching-cc41f3b73e7c
+#ifndef WLED_DEBUG
+  // this header name is misleading, "no-cache" will not disable cache,
+  // it just revalidates on every load using the "If-None-Match" header with the last ETag value
+  response->addHeader(F("Cache-Control"), "no-cache");
+#else
+  response->addHeader(F("Cache-Control"), "no-store,max-age=0"); // prevent caching if debug build
+#endif
   sprintf_P(tmp, PSTR("%8d-%02x"), VERSION, cacheInvalidate);
   response->addHeader(F("ETag"), tmp);
 }
 
-bool handleIfNoneMatchCacheHeader(AsyncWebServerRequest* request)
+bool handleIfNoneMatchCacheHeader(AsyncWebServerRequest *request)
 {
-  AsyncWebHeader* header = request->getHeader("If-None-Match");
-  if (header && header->value() == String(VERSION)) {
+  AsyncWebHeader *header = request->getHeader("If-None-Match");
+  if (header && header->value() == String(VERSION))
+  {
     request->send(304);
     return true;
   }

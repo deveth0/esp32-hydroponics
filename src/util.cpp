@@ -68,3 +68,85 @@ float mapfloat(float x, float in_min, float in_max, float out_min, float out_max
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+
+//append a numeric setting to string buffer
+void sappend(char stype, const char* key, int val)
+{
+  char ds[] = "d.Sf.";
+
+  switch(stype)
+  {
+    case 'c': //checkbox
+      oappend(ds);
+      oappend(key);
+      oappend(".checked=");
+      oappendi(val);
+      oappend(";");
+      break;
+    case 'v': //numeric
+      oappend(ds);
+      oappend(key);
+      oappend(".value=");
+      oappendi(val);
+      oappend(";");
+      break;
+    case 'i': //selectedIndex
+      oappend(ds);
+      oappend(key);
+      oappend(SET_F(".selectedIndex="));
+      oappendi(val);
+      oappend(";");
+      break;
+  }
+}
+//append a string setting to buffer
+void sappends(char stype, const char* key, char* val)
+{
+  switch(stype)
+  {
+    case 's': {//string (we can interpret val as char*)
+      String buf = val;
+      //convert "%" to "%%" to make EspAsyncWebServer happy
+      //buf.replace("%","%%");
+      oappend("d.Sf.");
+      oappend(key);
+      oappend(".value=\"");
+      oappend(buf.c_str());
+      oappend("\";");
+      break;}
+    case 'm': //message
+      oappend(SET_F("d.getElementsByClassName"));
+      oappend(key);
+      oappend(SET_F(".innerHTML=\""));
+      oappend(val);
+      oappend("\";");
+      break;
+  }
+}
+
+bool oappendi(int i)
+{
+  char s[11];
+  sprintf(s, "%d", i);
+  return oappend(s);
+}
+
+bool oappend(const char* txt)
+{
+  uint16_t len = strlen(txt);
+  if (olen + len >= SETTINGS_STACK_BUF_SIZE)
+    return false;        // buffer full
+  strcpy(obuf + olen, txt);
+  olen += len;
+  return true;
+}
+
+bool isAsterisksOnly(const char* str, byte maxLen)
+{
+  for (byte i = 0; i < maxLen; i++) {
+    if (str[i] == 0) break;
+    if (str[i] != '*') return false;
+  }
+  //at this point the password contains asterisks only
+  return (str[0] != 0); //false on empty string
+}

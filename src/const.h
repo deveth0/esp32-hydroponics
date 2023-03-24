@@ -15,6 +15,7 @@
 #define JSON_BUFFER_SIZE 24576
 #define MIN_HEAP_SIZE (8192)
 
+#define SETTINGS_STACK_BUF_SIZE 3096
 
 // Error modes
 #define ERR_NONE         0  // All good :)
