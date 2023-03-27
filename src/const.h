@@ -6,6 +6,19 @@
 #define DEFAULT_AP_SSID "HYDROPONICS-AP"
 #define DEFAULT_AP_PASS "hydro1234"
 
+
+#define NUMBER_MEASUREMENTS 5 // number of measurements used to form an average
+#define TEMPERATURE_INTERVAL 5 // Interval to measure temperature in seconds
+#define PH_TDS_INTERVAL 300 // Interval to measure ph and tds in seconds (alternating between the sensors)
+#define PH_ON_TIME 60 // Seconds waiting before taking a ph measurement after switching the sensor on
+#define TDS_ON_TIME 30 // Seconds waiting before taking a tds measurement after switching the sensor on
+
+#define TEMP_PIN 25
+#define PH_PIN 32
+#define PH_MOSFET_PIN 27
+#define TDS_PIN 35
+#define TDS_MOSFET_PIN 33
+
 //Access point behavior
 #define AP_BEHAVIOR_BOOT_NO_CONN          0     //Open AP when no connection after boot
 #define AP_BEHAVIOR_NO_CONN               1     //Open when no connection (either after boot or if connection is lost)

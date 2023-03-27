@@ -10,6 +10,7 @@
 node_modules
 .idea
 # Ignore builds
+src/hydroponics.ino.cpp
 *.gch
 dist/
 node_modules/

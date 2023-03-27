@@ -11,4 +11,5 @@ void sappends(char stype, const char* key, char* val);
 bool oappend(const char* txt);
 bool oappendi(int i);
 bool isAsterisksOnly(const char* str, byte maxLen);
+uint16_t readAverage(uint8_t pin, uint8_t number);
 #endif

@@ -5,7 +5,7 @@
 
 Hydroponics::Hydroponics()
 {
-  oneWire = OneWire(tempPin);
+  oneWire = OneWire(TEMP_PIN);
   dallasTemperature = DallasTemperature(&oneWire);
 }
 
@@ -20,14 +20,17 @@ void Hydroponics::loop()
   yield();
   handleSensors();
 
-  if (apActive) dnsServer.processNextRequest();
+  if (apActive)
+    dnsServer.processNextRequest();
 
-  if (doSerializeConfig) serializeConfig();
+  if (doSerializeConfig)
+    serializeConfig();
 
   if (doReboot) // if busses have to be inited & saved, wait until next iteration
     reset();
 
-  if (doCloseFile) {
+  if (doCloseFile)
+  {
     closeFile();
     yield();
   }
@@ -85,55 +88,103 @@ void Hydroponics::setup()
   initServer();
 
   dallasTemperature.begin();
-  pinMode(phPin, INPUT);
-  pinMode(tdsPin, INPUT);
+  pinMode(PH_PIN, INPUT);
+  pinMode(TDS_PIN, INPUT);
+  pinMode(PH_MOSFET_PIN, OUTPUT);
+  pinMode(TDS_MOSFET_PIN, OUTPUT);
 }
 
 void Hydroponics::handleSensors()
 {
 
   timer = millis();
-  if (timer - lastTemperatureMeasure >= TemperatureInterval * 1000)
+  if (timer - lastTemperatureMeasure >= TEMPERATURE_INTERVAL * 1000)
   {
     lastTemperatureMeasure = timer;
+    float temperatureC = 0;
 
-    dallasTemperature.requestTemperatures();
+    for (int i = 0; i < NUMBER_MEASUREMENTS; i++)
+    {
+      dallasTemperature.requestTemperatures();
+      temperatureC += dallasTemperature.getTempCByIndex(0);
+    }
 
-    float temperatureC = dallasTemperature.getTempCByIndex(0);
-    temperatureC = roundf(temperatureC * 10) / 10;
+    temperatureC = roundf((temperatureC / NUMBER_MEASUREMENTS) * 10) / 10;
 
     if (temperatureC != lastTemperature)
     {
-      DEBUGFS_PRINTF("new temperature %f °C\n", temperatureC);
+      DEBUG_PRINTF("new temperature %f °C\n", temperatureC);
       publishMqtt("temperature", String(temperatureC, 2).c_str());
       lastTemperature = temperatureC;
     }
+  }
 
-    float tdsRead = analogRead(tdsPin);
-    float averageVoltage = tdsRead * (float)3.3 / 4095.0; // read the analog value more stable by the median filtering algorithm, and convert to voltage value
-
-    float compensationCoefficient = 1.0 + 0.02 * (temperatureC - 25.0);                                                                                                                    // temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
-    float compensationVolatge = averageVoltage / compensationCoefficient;                                                                                                                  // temperature compensation
-    float tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge - 255.86 * compensationVolatge * compensationVolatge + 857.39 * compensationVolatge) * 0.5; // convert voltage value to tds value
-
-    tdsValue = roundf(tdsValue / 100) * 100;
-
-    if (tdsValue != lastTds)
+  if (timer - lastPhTdsMeasure >= PH_TDS_INTERVAL * 1000)
+  {
+    if (phMeasure)
     {
-      DEBUGFS_PRINTF("new tds %f ppm\n", tdsValue);
-      publishMqtt("tds", String(tdsValue, 2).c_str());
-      lastTds = tdsValue;
+      // check, if the mosfet was not activated yet
+      if (digitalRead(PH_MOSFET_PIN) == LOW)
+      {
+        DEBUG_PRINTLN("Activating ph mosfet");
+        digitalWrite(PH_MOSFET_PIN, HIGH);
+        lastPhTdsOnSwitch = timer;
+      }
+      // check if the waiting period is over and we can take a measurement
+      if (timer - lastPhTdsOnSwitch >= PH_ON_TIME * 1000)
+      {
+        DEBUG_PRINTLN("Finished waiting for ph sensor to heat up");
+        lastPhTdsMeasure = timer;
+
+        float phValue = readAverage(PH_PIN, NUMBER_MEASUREMENTS) * (float)5.0 / 4095.0;
+        phValue = roundf((phValue)*10) / 10;
+
+        if (phValue != lastPh)
+        {
+          DEBUG_PRINTF("new ph %f\n", phValue);
+          publishMqtt("ph", String(phValue, 2).c_str());
+          lastPh = phValue;
+        }
+
+        // cleanup and deactivate ph mosfet
+        phMeasure = false;
+        digitalWrite(PH_MOSFET_PIN, LOW);
+      }
     }
-
-    float phVoltage = analogRead(tdsPin) * (5.0 / 4095.0);
-    float phValue = mapfloat(phVoltage, 0.0, 5.0, 14, 0);
-    phValue = roundf(phValue * 10) / 10;
-
-    if (phValue != lastPh)
+    else
     {
-      DEBUGFS_PRINTF("new ph %f\n", phValue);
-      publishMqtt("ph", String(phValue, 2).c_str());
-      lastPh = phValue;
+      // check, if the mosfet was not activated yet
+      if (digitalRead(TDS_MOSFET_PIN) == LOW)
+      {
+        DEBUG_PRINTLN("Activating tds mosfet");
+        digitalWrite(TDS_MOSFET_PIN, HIGH);
+        lastPhTdsOnSwitch = timer;
+      }
+      // check if the waiting period is over and we can take a measurement
+      if (timer - lastPhTdsOnSwitch >= TDS_ON_TIME * 1000)
+      {
+        DEBUG_PRINTLN("Perform tds measurement");
+        lastPhTdsMeasure = timer;
+
+        float tdsRead = readAverage(TDS_PIN, NUMBER_MEASUREMENTS);
+
+        float averageVoltage = tdsRead * (float)3.3 / 4095.0; // read the analog value more stable by the median filtering algorithm, and convert to voltage value
+
+        float compensationCoefficient = 1.0 + 0.02 * (lastTemperature - 25.0);                                                                                                                 // temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
+        float compensationVolatge = averageVoltage / compensationCoefficient;                                                                                                                  // temperature compensation
+        float tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge - 255.86 * compensationVolatge * compensationVolatge + 857.39 * compensationVolatge) * 0.5; // convert voltage value to tds value
+
+        tdsValue = roundf(tdsValue / 100) * 100;
+
+        if (tdsValue != lastTds)
+        {
+          DEBUG_PRINTF("new tds %f ppm\n", tdsValue);
+          publishMqtt("tds", String(tdsValue, 2).c_str());
+          lastTds = tdsValue;
+        }
+        phMeasure = true;
+        digitalWrite(TDS_MOSFET_PIN, LOW);
+      }
     }
   }
 }

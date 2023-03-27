@@ -61,10 +61,6 @@
 
 #define HYDROPONICS_FS LittleFS
 
-constexpr uint8_t tempPin = 25;
-constexpr uint8_t phPin = 26;
-constexpr uint8_t tdsPin = 39;
-
 // GLOBAL VARIABLES
 // both declared and defined in header (solution from http://www.keil.com/support/docs/1868.htm)
 //
@@ -262,9 +258,12 @@ public:
 private:
   OneWire oneWire;
   DallasTemperature dallasTemperature;
-  uint16_t TemperatureInterval = 5; // Interval to measure temperature (and humidity, dew point if available) in seconds
+
+  bool phMeasure = true;
   long timer;
   long lastTemperatureMeasure = 0;
+  long lastPhTdsMeasure = 0;
+  long lastPhTdsOnSwitch = 0;
     // Track previous sensor values
   float lastTemperature;
   float lastPh;
