@@ -9,3 +9,8 @@
 .clang-format
 node_modules
 .idea
+# Ignore builds
+*.gch
+dist/
+node_modules/
+*.iml

@@ -1,0 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Merriweather&family=Open+Sans&display=swap");
+
+$hyd-type-reg: "Open Sans", Helvetica, Arial, sans-serif;
+$hyd-type-head: "Merriweather", serif;
+
+@mixin smoothing {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+}
+
+// used as body default font
+%hyd-type__reg-1 {
+  font-family: $hyd-type-reg;
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1.5;
+  @include smoothing();
+}

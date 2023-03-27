@@ -323,6 +323,7 @@ void Hydroponics::initConnection()
 
   lastReconnectAttempt = millis();
 
+  DEBUGFS_PRINTF("clientSSID: %s\n", clientSSID);
   if (!HYDROPONICS_WIFI_CONFIGURED)
   {
     DEBUG_PRINTLN(F("No connection configured."));

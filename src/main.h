@@ -34,9 +34,9 @@
 #include "improv.h"
 #include "cfg.h"
 #include "file.h"
-#include "hydroponics_server.h"
 #include "mqtt.h"
 #include "settings.h"
+#include "web.h"
 
 #ifndef CLIENT_SSID
 #define CLIENT_SSID DEFAULT_CLIENT_SSID
@@ -169,7 +169,7 @@ HYDROPONICS_GLOBAL AsyncMqttClient *mqtt _INIT(NULL);
 HYDROPONICS_GLOBAL bool mqttEnabled _INIT(false);
 HYDROPONICS_GLOBAL char mqttStatusTopic[40] _INIT("");        // this must be global because of async handlers
 HYDROPONICS_GLOBAL char mqttDeviceTopic[33] _INIT("");        // main MQTT topic (individual per device, default is wled/mac)
-HYDROPONICS_GLOBAL char mqttGroupTopic[33] _INIT("wled/all"); // second MQTT topic (for example to group devices)
+HYDROPONICS_GLOBAL char mqttGroupTopic[33] _INIT("hydroponics/all"); // second MQTT topic (for example to group devices)
 HYDROPONICS_GLOBAL char mqttServer[33] _INIT("");             // both domains and IPs should work (no SSL)
 HYDROPONICS_GLOBAL char mqttUser[41] _INIT("");               // optional: username for MQTT auth
 HYDROPONICS_GLOBAL char mqttPass[65] _INIT("");               // optional: password for MQTT auth

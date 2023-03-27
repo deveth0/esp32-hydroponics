@@ -12,6 +12,7 @@ void parseMQTTBriPayload(char *payload)
 
 void onMqttConnect(bool sessionPresent)
 {
+  DEBUG_PRINTLN("onMqttConnect");
   //(re)subscribe to required topics
   char subuf[38];
 
@@ -41,17 +42,15 @@ void onMqttConnect(bool sessionPresent)
   DEBUG_PRINTLN(F("MQTT ready"));
 
   char mqttTemperatureTopic[128];
-  char mqttHumidityTopic[128];
-  char mqttPressureTopic[128];
-  char mqttHeatIndexTopic[128];
-  char mqttDewPointTopic[128];
+  char mqttTDSTopic[128];
+  char mqttPHTopic[128];
   snprintf_P(mqttTemperatureTopic, 127, PSTR("%s/temperature"), mqttDeviceTopic);
-  snprintf_P(mqttPressureTopic, 127, PSTR("%s/pressure"), mqttDeviceTopic);
-  snprintf_P(mqttHumidityTopic, 127, PSTR("%s/humidity"), mqttDeviceTopic);
-  snprintf_P(mqttHeatIndexTopic, 127, PSTR("%s/heat_index"), mqttDeviceTopic);
-  snprintf_P(mqttDewPointTopic, 127, PSTR("%s/dew_point"), mqttDeviceTopic);
+  snprintf_P(mqttTDSTopic, 127, PSTR("%s/tds"), mqttDeviceTopic);
+  snprintf_P(mqttPHTopic, 127, PSTR("%s/ph"), mqttDeviceTopic);
 
   _createMqttSensor(F("Temperature"), mqttTemperatureTopic, "temperature", F("°C"));
+  _createMqttSensor(F("TDS"), mqttTDSTopic, "", F("ppm"));
+  _createMqttSensor(F("PH"), mqttPHTopic, "", F("pH"));
 }
 
 // Create an MQTT Sensor for Home Assistant Discovery purposes, this includes a pointer to the topic that is published to in the Loop.
@@ -72,9 +71,9 @@ void _createMqttSensor(const String &name, const String &topic, const String &de
 
   JsonObject device = doc.createNestedObject(F("device")); // attach the sensor to the same device
   device[F("name")] = serverDescription;
-  device[F("identifiers")] = "wled-sensor-" + String(mqttClientID);
-  device[F("manufacturer")] = F("WLED");
-  device[F("model")] = F("FOSS");
+  device[F("identifiers")] = "hydroponics-sensor-" + String(mqttClientID);
+  device[F("manufacturer")] = F("deveth0");
+  device[F("model")] = F("esp32-hydroponics");
   device[F("sw_version")] = versionString;
 
   String temp;
@@ -85,23 +84,32 @@ void _createMqttSensor(const String &name, const String &topic, const String &de
   mqtt->publish(t.c_str(), 0, true, temp.c_str());
 }
 
-void publishMqtt(const char *topic, const char* state) {
-      DEBUG_PRINTF("Publish mqtt %s\n", state);
-      //Check if MQTT Connected, otherwise it will crash the 8266
-      if (HYDROPONICS_MQTT_CONNECTED){
-        char subuf[128];
-        snprintf_P(subuf, 127, PSTR("%s/%s"), mqttDeviceTopic, topic);
-        mqtt->publish(subuf, 0, false, state);
-      } else {
-        DEBUG_PRINTLN("MQTT not connected");
-      }
-    }
+void publishMqtt(const char *topic, const char *state)
+{
+  
+  // Check if MQTT Connected, otherwise it will crash the 8266
+  if (HYDROPONICS_MQTT_CONNECTED)
+  {
+    char subuf[128];
+    snprintf_P(subuf, 127, PSTR("%s/%s"), mqttDeviceTopic, topic);
+    DEBUG_PRINTF("Publish mqtt %s - %s\n", subuf, state);
+    mqtt->publish(subuf, 0, false, state);
+  }
+  else
+  {
+    DEBUG_PRINTLN("MQTT not connected");
+  }
+}
 
 // HA autodiscovery was removed in favor of the native integration in HA v0.102.0
 bool initMqtt()
 {
+  DEBUG_PRINTLN("initMqtt");
   if (!mqttEnabled || mqttServer[0] == 0 || !HYDROPONICS_CONNECTED)
+  {
+    DEBUG_PRINTLN("initMqtt failed");
     return false;
+  }
 
   if (mqtt == nullptr)
   {
@@ -109,7 +117,10 @@ bool initMqtt()
     mqtt->onConnect(onMqttConnect);
   }
   if (mqtt->connected())
+  {
+    DEBUG_PRINTLN("mqtt connected");
     return true;
+  }
 
   DEBUG_PRINTLN(F("Reconnecting MQTT"));
   IPAddress mqttIP;

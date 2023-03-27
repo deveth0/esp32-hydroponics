@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta name="viewport" content="width=500">
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+	<meta charset="utf-8">
+	<title>Sync Settings</title>
+	<script>var d = document;
+		var loc = false, locip;
+		function gId(s) { return d.getElementById(s); }
+		function B() { window.open("/settings", "_self"); }
+		// https://www.educative.io/edpresso/how-to-dynamically-load-a-js-file-in-javascript
+		function loadJS(FILE_URL, async = true) {
+			let scE = d.createElement("script");
+			scE.setAttribute("src", FILE_URL);
+			scE.setAttribute("type", "text/javascript");
+			scE.setAttribute("async", async);
+			d.body.appendChild(scE);
+			// success event 
+			scE.addEventListener("load", () => {
+				//console.log("File loaded");
+				GetV(); SetVal();
+			});
+			// error event
+			scE.addEventListener("error", (ev) => {
+				console.log("Error on loading file", ev);
+				alert("Loading of configuration script failed.\nIncomplete page data!");
+			});
+		}
+
+		function SetVal() {  }
+		function S() {
+			var url = (loc ? `http://${locip}` : '') + '/settings/s.js?p=4';
+			loadJS(url, false);	// If we set async false, file is loaded and executed, then next statement is processed
+		}
+	</script>
+	<style>
+		@import url("style.css");
+	</style>
+</head>
+
+<body onload="S()">
+	<form id="form_s" name="Sf" method="post" onsubmit="GC()">
+		<div class="toprow">
+			<button type="button" onclick="B()">Back</button><button type="submit">Save</button>
+			<hr>
+		</div>
+		<h2>Sync setup</h2>
+		<h3>MQTT</h3>
+		<div id="MQTT">
+			Enable MQTT: <input type="checkbox" name="MQ"><br>
+			Broker: <input type="text" name="MS" maxlength="32">
+			Port: <input name="MQPORT" type="number" min="1" max="65535" class="d5"><br>
+			<b>The MQTT credentials are sent over an unsecured connection.<br>
+				Never use the MQTT password for another service!</b><br>
+			Username: <input type="text" name="MQUSER" maxlength="40"><br>
+			Password: <input type="password" name="MQPASS" maxlength="64"><br>
+			Client ID: <input type="text" name="MQCID" maxlength="40"><br>
+			Device Topic: <input type="text" name="MD" maxlength="32"><br>
+			Group Topic: <input type="text" name="MG" maxlength="32"><br>
+			<i>Reboot required to apply changes. </i><a href="https://kno.wled.ge/interfaces/mqtt/" target="_blank">MQTT
+				info</a>
+		</div>
+		<button type="button" onclick="B()">Back</button><button type="submit">Save</button>
+	</form>
+</body>
+
+</html>

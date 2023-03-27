@@ -1,0 +1,28 @@
+{
+  "author": "deveth0 <amuthmann@dev-eth0.de>",
+  "name": "esp32-hydroponics",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "rimraf dist && webpack serve --mode=development",
+    "build": "rimraf dist && webpack --mode production",
+    "deploy": "rimraf dist && webpack --mode production && platformio run --environment esp32dev --target upload && sleep 15 && platformio run --environment esp32dev --target uploadfs"
+  },
+  "devDependencies": {
+    "change-case": "^4.1.2",
+    "compression-webpack-plugin": "^10.0.0",
+    "css-loader": "^6.7.3",
+    "css-minimizer-webpack-plugin": "^4.2.2",
+    "html-webpack-plugin": "^5.5.0",
+    "mini-css-extract-plugin": "^2.7.5",
+    "mocker-api": "2.9.5",
+    "rimraf": "^4.4.1",
+    "sass": "^1.60.0",
+    "sass-loader": "^13.2.1",
+    "style-loader": "^3.3.2",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.2",
+    "webpack": "^5.76.3",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.13.1"
+  }
+}

@@ -391,7 +391,6 @@ bool readObjectFromFile(const char *file, const char *key, JsonDocument *dest)
   f = HYDROPONICS_FS.open(file, "r");
   if (!f)
     return false;
-
   if (key != nullptr && !bufferedFind(key)) // key does not exist in file
   {
     f.close();
@@ -401,7 +400,6 @@ bool readObjectFromFile(const char *file, const char *key, JsonDocument *dest)
   }
 
   deserializeJson(*dest, f);
-
   f.close();
   DEBUGFS_PRINTF("Read, took %d ms\n", millis() - s);
   return true;

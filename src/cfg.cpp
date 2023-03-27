@@ -5,19 +5,24 @@
  * The structure of the JSON is not to be considered an official API and may change without notice.
  */
 
-//simple macro for ArduinoJSON's or syntax
-#define CJSON(a,b) a = b | a
+// simple macro for ArduinoJSON's or syntax
+#define CJSON(a, b) a = b | a
 
-void getStringFromJson(char* dest, const char* src, size_t len) {
-  if (src != nullptr) strlcpy(dest, src, len);
+void getStringFromJson(char *dest, const char *src, size_t len)
+{
+  if (src != nullptr)
+    strlcpy(dest, src, len);
 }
 
-bool deserializeConfig(JsonObject doc, bool fromFS) {
-  bool needsSave = false;
-  //int rev_major = doc["rev"][0]; // 1
-  //int rev_minor = doc["rev"][1]; // 0
+bool deserializeConfig(JsonObject doc, bool fromFS)
+{
+  serializeJsonPretty(doc, Serial);
 
-  //long vid = doc[F("vid")]; // 2010020
+  bool needsSave = false;
+  // int rev_major = doc["rev"][0]; // 1
+  // int rev_minor = doc["rev"][1]; // 0
+
+  // long vid = doc[F("vid")]; // 2010020
 
   JsonObject id = doc["id"];
   getStringFromJson(cmDNS, id[F("mdns")], 33);
@@ -25,16 +30,17 @@ bool deserializeConfig(JsonObject doc, bool fromFS) {
 
   JsonObject nw_ins_0 = doc["nw"]["ins"][0];
   getStringFromJson(clientSSID, nw_ins_0[F("ssid")], 33);
-  //int nw_ins_0_pskl = nw_ins_0[F("pskl")];
-  //The WiFi PSK is normally not contained in the regular file for security reasons.
-  //If it is present however, we will use it
+  // int nw_ins_0_pskl = nw_ins_0[F("pskl")];
+  // The WiFi PSK is normally not contained in the regular file for security reasons.
+  // If it is present however, we will use it
   getStringFromJson(clientPass, nw_ins_0["psk"], 65);
 
   JsonArray nw_ins_0_ip = nw_ins_0["ip"];
   JsonArray nw_ins_0_gw = nw_ins_0["gw"];
   JsonArray nw_ins_0_sn = nw_ins_0["sn"];
 
-  for (byte i = 0; i < 4; i++) {
+  for (byte i = 0; i < 4; i++)
+  {
     CJSON(staticIP[i], nw_ins_0_ip[i]);
     CJSON(staticGateway[i], nw_ins_0_gw[i]);
     CJSON(staticSubnet[i], nw_ins_0_sn[i]);
@@ -42,14 +48,16 @@ bool deserializeConfig(JsonObject doc, bool fromFS) {
 
   JsonObject ap = doc["ap"];
   getStringFromJson(apSSID, ap[F("ssid")], 33);
-  getStringFromJson(apPass, ap["psk"] , 65); //normally not present due to security
-  //int ap_pskl = ap[F("pskl")];
+  getStringFromJson(apPass, ap["psk"], 65); // normally not present due to security
+  // int ap_pskl = ap[F("pskl")];
 
   CJSON(apChannel, ap[F("chan")]);
-  if (apChannel > 13 || apChannel < 1) apChannel = 1;
+  if (apChannel > 13 || apChannel < 1)
+    apChannel = 1;
 
   CJSON(apHide, ap[F("hide")]);
-  if (apHide > 1) apHide = 1;
+  if (apHide > 1)
+    apHide = 1;
 
   CJSON(apBehavior, ap[F("behav")]);
 
@@ -65,11 +73,11 @@ bool deserializeConfig(JsonObject doc, bool fromFS) {
   getStringFromJson(mqttServer, if_mqtt[F("broker")], 33);
   CJSON(mqttPort, if_mqtt["port"]); // 1883
   getStringFromJson(mqttUser, if_mqtt[F("user")], 41);
-  getStringFromJson(mqttPass, if_mqtt["psk"], 65); //normally not present due to security
+  getStringFromJson(mqttPass, if_mqtt["psk"], 65); // normally not present due to security
   getStringFromJson(mqttClientID, if_mqtt[F("cid")], 41);
 
   getStringFromJson(mqttDeviceTopic, if_mqtt[F("topics")][F("device")], 33); // "wled/test"
-  getStringFromJson(mqttGroupTopic, if_mqtt[F("topics")][F("group")], 33); // ""
+  getStringFromJson(mqttGroupTopic, if_mqtt[F("topics")][F("group")], 33);   // ""
 
   JsonObject if_ntp = doc[F("ntp")];
   CJSON(ntpEnabled, if_ntp["en"]);
@@ -80,31 +88,37 @@ bool deserializeConfig(JsonObject doc, bool fromFS) {
   CJSON(longitude, if_ntp[F("ln")]);
   CJSON(latitude, if_ntp[F("lt")]);
 
-  if (fromFS) return needsSave;
+  if (fromFS)
+    return needsSave;
   // if from /json/cfg
   doReboot = doc[F("rb")] | doReboot;
   return (doc["sv"] | true);
 }
 
-void deserializeConfigFromFS() {
+void deserializeConfigFromFS()
+{
   bool success = deserializeConfigSec();
-  if (!success) { //if file does not exist, try reading from EEPROM
-    #ifdef HYDROPONICS_ADD_EEPROM_SUPPORT
+  if (!success)
+  { // if file does not exist, try reading from EEPROM
+#ifdef HYDROPONICS_ADD_EEPROM_SUPPORT
     deEEPSettings();
     return;
-    #endif
+#endif
   }
 
-  if (!requestJSONBufferLock(1)) return;
+  if (!requestJSONBufferLock(1))
+    return;
 
   DEBUG_PRINTLN(F("Reading settings from /cfg.json..."));
 
   success = readObjectFromFile("/cfg.json", nullptr, &doc);
-  if (!success) { // if file does not exist, optionally try reading from EEPROM and then save defaults to FS
+  if (!success)
+  { // if file does not exist, optionally try reading from EEPROM and then save defaults to FS
+    DEBUG_PRINTLN("Could not read cfg.json");
     releaseJSONBufferLock();
-    #ifdef HYDROPONICS_ADD_EEPROM_SUPPORT
+#ifdef HYDROPONICS_ADD_EEPROM_SUPPORT
     deEEPSettings();
-    #endif
+#endif
 
     // save default values to /cfg.json
     serializeConfig();
@@ -115,19 +129,22 @@ void deserializeConfigFromFS() {
   bool needsSave = deserializeConfig(doc.as<JsonObject>(), true);
   releaseJSONBufferLock();
 
-  if (needsSave) serializeConfig(); // usermods required new parameters
+  if (needsSave)
+    serializeConfig(); // usermods required new parameters
 }
 
-void serializeConfig() {
+void serializeConfig()
+{
   serializeConfigSec();
 
   DEBUG_PRINTLN(F("Writing settings to /cfg.json..."));
 
-  if (!requestJSONBufferLock(2)) return;
+  if (!requestJSONBufferLock(2))
+    return;
 
   JsonArray rev = doc.createNestedArray("rev");
-  rev.add(1); //major settings revision
-  rev.add(0); //minor settings revision
+  rev.add(1); // major settings revision
+  rev.add(0); // minor settings revision
 
   doc[F("vid")] = VERSION;
 
@@ -147,7 +164,8 @@ void serializeConfig() {
   JsonArray nw_ins_0_gw = nw_ins_0.createNestedArray("gw");
   JsonArray nw_ins_0_sn = nw_ins_0.createNestedArray("sn");
 
-  for (byte i = 0; i < 4; i++) {
+  for (byte i = 0; i < 4; i++)
+  {
     nw_ins_0_ip.add(staticIP[i]);
     nw_ins_0_gw.add(staticGateway[i]);
     nw_ins_0_sn.add(staticSubnet[i]);
@@ -187,23 +205,29 @@ void serializeConfig() {
   if_ntp[F("ln")] = longitude;
   if_ntp[F("lt")] = latitude;
 
+  serializeJsonPretty(doc, Serial);
 
+  DEBUG_PRINTLN("writing config ..");
   File f = HYDROPONICS_FS.open("/cfg.json", "w");
-  if (f) serializeJson(doc, f);
+  if (f)
+    serializeJson(doc, f);
   f.close();
   releaseJSONBufferLock();
 
   doSerializeConfig = false;
 }
 
-//settings in /wsec.json, not accessible via webserver, for passwords and tokens
-bool deserializeConfigSec() {
+// settings in /wsec.json, not accessible via webserver, for passwords and tokens
+bool deserializeConfigSec()
+{
   DEBUG_PRINTLN(F("Reading settings from /wsec.json..."));
 
-  if (!requestJSONBufferLock(3)) return false;
+  if (!requestJSONBufferLock(3))
+    return false;
 
   bool success = readObjectFromFile("/wsec.json", nullptr, &doc);
-  if (!success) {
+  if (!success)
+  {
     releaseJSONBufferLock();
     return false;
   }
@@ -212,19 +236,23 @@ bool deserializeConfigSec() {
   getStringFromJson(clientPass, nw_ins_0["psk"], 65);
 
   JsonObject ap = doc["ap"];
-  getStringFromJson(apPass, ap["psk"] , 65);
+  getStringFromJson(apPass, ap["psk"], 65);
 
   JsonObject if_mqtt = doc["mqtt"];
   getStringFromJson(mqttPass, if_mqtt["psk"], 65);
 
   releaseJSONBufferLock();
+
+  serializeJsonPretty(doc, Serial);
   return true;
 }
 
-void serializeConfigSec() {
+void serializeConfigSec()
+{
   DEBUG_PRINTLN(F("Writing settings to /wsec.json..."));
 
-  if (!requestJSONBufferLock(4)) return;
+  if (!requestJSONBufferLock(4))
+    return;
 
   JsonObject nw = doc.createNestedObject("nw");
 
@@ -240,7 +268,8 @@ void serializeConfigSec() {
   if_mqtt["psk"] = mqttPass;
 
   File f = HYDROPONICS_FS.open("/wsec.json", "w");
-  if (f) serializeJson(doc, f);
+  if (f)
+    serializeJson(doc, f);
   f.close();
   releaseJSONBufferLock();
 }

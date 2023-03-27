@@ -1,0 +1,20 @@
+$hyd-color__black: #000;
+$hyd-color__white: #fff;
+
+$hyd-color__primary: #31dbda;
+$hyd-color__secondary: #db31db;
+$hyd-color__primary_transparent: rgba($hyd-color__primary, 0.85);
+$hyd-color__secondary_transparent: rgba($hyd-color__secondary, 0.85);
+
+$hyd-color__info: #5cb85c;
+$hyd-color__warn: #dc3630;
+
+$hyd-color__grey: #121212;
+$hyd-color__grey_transparent: rgba($hyd-color__grey, 0.85);
+$hyd-color__grey-10: lighten($hyd-color__grey, 10%);
+$hyd-color__grey-10_transparent: rgba($hyd-color__grey-10, 0.85);
+
+$hyd-color__background: #f0f0f0;
+
+$hamburger-layer-color: $hyd-color__primary;
+$hamburger-active-layer-color: $hyd-color__secondary;
