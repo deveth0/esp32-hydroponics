@@ -92,9 +92,12 @@ void handleSettingsPOST(AsyncWebServerRequest *request)
   if (subPage == 1)
     forceReconnect = true;
 
-    AsyncWebServerResponse *response = request->beginResponse(302);
-    response->addHeader(F("Location"), F("/index.html"));
-    request->send(response);
+  if (subPage == 4)
+    doReboot = true;
+
+  AsyncWebServerResponse *response = request->beginResponse(302);
+  response->addHeader(F("Location"), F("/index.html"));
+  request->send(response);
 }
 
 bool captivePortal(AsyncWebServerRequest *request)

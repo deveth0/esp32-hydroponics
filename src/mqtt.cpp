@@ -41,14 +41,20 @@ void onMqttConnect(bool sessionPresent)
   doPublishMqtt = true;
   DEBUG_PRINTLN(F("MQTT ready"));
 
+  char mqttWaterTemperatureTopic[128];
   char mqttTemperatureTopic[128];
+  char mqttPressureTopic[128];
   char mqttTDSTopic[128];
   char mqttPHTopic[128];
+  snprintf_P(mqttWaterTemperatureTopic, 127, PSTR("%s/water"), mqttDeviceTopic);  
   snprintf_P(mqttTemperatureTopic, 127, PSTR("%s/temperature"), mqttDeviceTopic);
+  snprintf_P(mqttPressureTopic, 127, PSTR("%s/pressure"), mqttDeviceTopic);
   snprintf_P(mqttTDSTopic, 127, PSTR("%s/tds"), mqttDeviceTopic);
   snprintf_P(mqttPHTopic, 127, PSTR("%s/ph"), mqttDeviceTopic);
 
+  _createMqttSensor(F("Water"), mqttWaterTemperatureTopic, "temperature", F("°C"));
   _createMqttSensor(F("Temperature"), mqttTemperatureTopic, "temperature", F("°C"));
+  _createMqttSensor(F("Pressure"), mqttPressureTopic, "pressure", F("Pa"));
   _createMqttSensor(F("TDS"), mqttTDSTopic, "", F("ppm"));
   _createMqttSensor(F("PH"), mqttPHTopic, "", F("pH"));
 }

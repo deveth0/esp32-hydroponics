@@ -13,6 +13,8 @@
 #define PH_ON_TIME 60 // Seconds waiting before taking a ph measurement after switching the sensor on
 #define TDS_ON_TIME 30 // Seconds waiting before taking a tds measurement after switching the sensor on
 
+#define BMP280_ADDRESS 0x76
+
 #define TEMP_PIN 25
 #define PH_PIN 32
 #define PH_MOSFET_PIN 27

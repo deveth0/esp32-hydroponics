@@ -7,6 +7,23 @@ Hydroponics::Hydroponics()
 {
   oneWire = OneWire(TEMP_PIN);
   dallasTemperature = DallasTemperature(&oneWire);
+  bmp280 = Adafruit_BMP280();
+
+  if (bmp280.begin(BMP280_ADDRESS, BMP280_CHIPID))
+  {
+    DEBUG_PRINTLN("BMP280 initalized");
+    bmp280Initialized = true;
+    bmp280.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
+                       Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+                       Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
+                       Adafruit_BMP280::FILTER_X16,      /* Filtering. */
+                       Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+  }
+  else
+  {
+    bmp280Initialized = false;
+    DEBUG_PRINTLN("Could not initalize BMP280");
+  }
 }
 
 void Hydroponics::reset()
@@ -111,11 +128,29 @@ void Hydroponics::handleSensors()
 
     temperatureC = roundf((temperatureC / NUMBER_MEASUREMENTS) * 10) / 10;
 
-    if (temperatureC != lastTemperature)
+    if (temperatureC != lastWaterTemperature)
     {
-      DEBUG_PRINTF("new temperature %f °C\n", temperatureC);
-      publishMqtt("temperature", String(temperatureC, 2).c_str());
-      lastTemperature = temperatureC;
+      DEBUG_PRINTF("new water temperature %f °C\n", temperatureC);
+      publishMqtt("water", String(temperatureC, 2).c_str());
+      lastWaterTemperature = temperatureC;
+    }
+
+    if (bmp280Initialized)
+    {
+
+      temperatureC = roundf((bmp280.readTemperature() * 10) / 10);
+      float pressure = roundf((bmp280.readPressure() * 0.1) / 10);
+      if (temperatureC != lastTemperature)
+      {
+        DEBUG_PRINTF("new temperature %f °C\n", temperatureC);
+        publishMqtt("temperature", String(temperatureC, 2).c_str());
+        lastTemperature = temperatureC;
+      }
+      if(pressure != lastPressure){
+        DEBUG_PRINTF("new pressure %f Pa\n", pressure);
+        publishMqtt("pressure", String(pressure, 2).c_str());
+        lastPressure = pressure;
+      }
     }
   }
 
@@ -360,7 +395,6 @@ void Hydroponics::initAP(bool resetAP)
 
 void Hydroponics::initConnection()
 {
-
   WiFi.disconnect(true); // close old connections
 
   if (staticIP[0] != 0 && staticGateway[0] != 0)

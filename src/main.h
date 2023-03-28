@@ -18,6 +18,7 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <Adafruit_BMP280.h>
 
 #include <ArduinoJson.h>
 #include <AsyncMqttClient.h>
@@ -122,8 +123,6 @@ HYDROPONICS_GLOBAL IPAddress staticSubnet _INIT_N(((255, 255, 255, 0))); // most
 // dns server
 HYDROPONICS_GLOBAL DNSServer dnsServer;
 
-HYDROPONICS_GLOBAL byte cacheInvalidate _INIT(0);
-
 // network time
 HYDROPONICS_GLOBAL bool ntpConnected _INIT(false);
 HYDROPONICS_GLOBAL time_t localTime _INIT(0);
@@ -177,11 +176,7 @@ HYDROPONICS_GLOBAL uint16_t mqttPort _INIT(1883);
 HYDROPONICS_GLOBAL bool showWelcomePage _INIT(false);
 
 // User Interface CONFIG
-#ifndef SERVERNAME
 HYDROPONICS_GLOBAL char serverDescription[33] _INIT("Hydroponics"); // Name of module - use default
-#else
-HYDROPONICS_GLOBAL char serverDescription[33] _INIT(SERVERNAME); // use predefined name
-#endif
 
 // server library objects
 HYDROPONICS_GLOBAL AsyncWebServer server _INIT_N(((80)));
@@ -191,6 +186,8 @@ HYDROPONICS_GLOBAL WiFiUDP ntpUdp;
 
 HYDROPONICS_GLOBAL String messageHead, messageSub;
 HYDROPONICS_GLOBAL byte optionType;
+
+HYDROPONICS_GLOBAL bool bmp280Initialized;
 
 #define HYDROPONICS_WIFI_CONFIGURED (strlen(clientSSID) >= 1 && strcmp(clientSSID, DEFAULT_CLIENT_SSID) != 0)
 
@@ -248,6 +245,7 @@ public:
   void loop();
   void reset();
 
+
   void handleConnection();
   void handleSensors();
 
@@ -258,6 +256,7 @@ public:
 private:
   OneWire oneWire;
   DallasTemperature dallasTemperature;
+  Adafruit_BMP280 bmp280;
 
   bool phMeasure = true;
   long timer;
@@ -266,6 +265,8 @@ private:
   long lastPhTdsOnSwitch = 0;
     // Track previous sensor values
   float lastTemperature;
+  float lastPressure;
+  float lastWaterTemperature;
   float lastPh;
   float lastTds;
 };
