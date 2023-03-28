@@ -67,7 +67,6 @@ void _createMqttSensor(const String &name, const String &topic, const String &de
     doc[F("unit_of_measurement")] = unitOfMeasurement;
   if (deviceClass != "")
     doc[F("device_class")] = deviceClass;
-  doc[F("expire_after")] = 1800;
 
   JsonObject device = doc.createNestedObject(F("device")); // attach the sensor to the same device
   device[F("name")] = serverDescription;
