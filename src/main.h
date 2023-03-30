@@ -38,6 +38,7 @@
 #include "mqtt.h"
 #include "settings.h"
 #include "web.h"
+#include "api.h"
 
 #ifndef CLIENT_SSID
 #define CLIENT_SSID DEFAULT_CLIENT_SSID
@@ -135,7 +136,7 @@ HYDROPONICS_GLOBAL float longitude _INIT(0.0);
 HYDROPONICS_GLOBAL float latitude _INIT(0.0);
 
 // Temp buffer
-HYDROPONICS_GLOBAL char* obuf;
+HYDROPONICS_GLOBAL char *obuf;
 HYDROPONICS_GLOBAL uint16_t olen _INIT(0);
 
 // General filesystem
@@ -162,13 +163,13 @@ HYDROPONICS_GLOBAL byte improvError _INIT(0);
 HYDROPONICS_GLOBAL unsigned long lastMqttReconnectAttempt _INIT(0); // used for other periodic tasks too
 HYDROPONICS_GLOBAL AsyncMqttClient *mqtt _INIT(NULL);
 HYDROPONICS_GLOBAL bool mqttEnabled _INIT(false);
-HYDROPONICS_GLOBAL char mqttStatusTopic[40] _INIT("");        // this must be global because of async handlers
-HYDROPONICS_GLOBAL char mqttDeviceTopic[33] _INIT("");        // main MQTT topic (individual per device, default is wled/mac)
+HYDROPONICS_GLOBAL char mqttStatusTopic[40] _INIT("");               // this must be global because of async handlers
+HYDROPONICS_GLOBAL char mqttDeviceTopic[33] _INIT("");               // main MQTT topic (individual per device, default is wled/mac)
 HYDROPONICS_GLOBAL char mqttGroupTopic[33] _INIT("hydroponics/all"); // second MQTT topic (for example to group devices)
-HYDROPONICS_GLOBAL char mqttServer[33] _INIT("");             // both domains and IPs should work (no SSL)
-HYDROPONICS_GLOBAL char mqttUser[41] _INIT("");               // optional: username for MQTT auth
-HYDROPONICS_GLOBAL char mqttPass[65] _INIT("");               // optional: password for MQTT auth
-HYDROPONICS_GLOBAL char mqttClientID[41] _INIT("");           // override the client ID
+HYDROPONICS_GLOBAL char mqttServer[33] _INIT("");                    // both domains and IPs should work (no SSL)
+HYDROPONICS_GLOBAL char mqttUser[41] _INIT("");                      // optional: username for MQTT auth
+HYDROPONICS_GLOBAL char mqttPass[65] _INIT("");                      // optional: password for MQTT auth
+HYDROPONICS_GLOBAL char mqttClientID[41] _INIT("");                  // override the client ID
 HYDROPONICS_GLOBAL uint16_t mqttPort _INIT(1883);
 #define HYDROPONICS_MQTT_CONNECTED (mqtt != nullptr && mqtt->connected())
 
@@ -203,6 +204,19 @@ HYDROPONICS_GLOBAL bool bmp280Initialized;
 HYDROPONICS_GLOBAL StaticJsonDocument<JSON_BUFFER_SIZE> doc;
 HYDROPONICS_GLOBAL volatile uint8_t jsonBufferLock _INIT(0);
 
+// Track previous sensor values
+HYDROPONICS_GLOBAL u_int lastDistance _INIT(0);
+HYDROPONICS_GLOBAL float lastTemperature _INIT(0);
+HYDROPONICS_GLOBAL float lastPressure _INIT(0);
+HYDROPONICS_GLOBAL float lastWaterTemperature _INIT(0);
+HYDROPONICS_GLOBAL float lastPh _INIT(0);
+HYDROPONICS_GLOBAL float lastTds _INIT(0);
+
+HYDROPONICS_GLOBAL long lastDistanceMeasure _INIT(0);
+HYDROPONICS_GLOBAL long lastTemperatureMeasure _INIT(0);
+HYDROPONICS_GLOBAL long lastPhTdsMeasure _INIT(0);
+HYDROPONICS_GLOBAL long lastPhTdsOnSwitch _INIT(0);
+
 #define DEBUGOUT Serial
 
 #ifdef HYDROPONICS_DEBUG
@@ -226,8 +240,8 @@ HYDROPONICS_GLOBAL volatile uint8_t jsonBufferLock _INIT(0);
 #define DEBUGFS_PRINTF(x...)
 #endif
 
-//macro to convert F to const
-#define SET_F(x)  (const char*)F(x)
+// macro to convert F to const
+#define SET_F(x) (const char *)F(x)
 
 class Hydroponics
 {
@@ -245,7 +259,6 @@ public:
   void loop();
   void reset();
 
-
   void handleConnection();
   void handleSensors();
 
@@ -260,16 +273,5 @@ private:
 
   bool phMeasure = true;
   long timer;
-  long lastDistanceMeasure = 0;
-  long lastTemperatureMeasure = 0;
-  long lastPhTdsMeasure = 0;
-  long lastPhTdsOnSwitch = 0;
-    // Track previous sensor values
-  u_int lastDistance;
-  float lastTemperature;
-  float lastPressure;
-  float lastWaterTemperature;
-  float lastPh;
-  float lastTds;
 };
 #endif // MAIN_H

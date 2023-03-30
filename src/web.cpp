@@ -58,6 +58,11 @@ void initServer()
   server.on("/settings", HTTP_POST, [](AsyncWebServerRequest *request)
             { handleSettingsPOST(request); });
 
+
+  server.on("/api/status.json", HTTP_GET,[](AsyncWebServerRequest *request){
+    handleApiStatus(request);
+  });
+
   server.onNotFound([](AsyncWebServerRequest *request)
                     { request->send(404, "text/html", "Not found"); });
 
