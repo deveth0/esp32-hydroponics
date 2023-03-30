@@ -260,10 +260,12 @@ private:
 
   bool phMeasure = true;
   long timer;
+  long lastDistanceMeasure = 0;
   long lastTemperatureMeasure = 0;
   long lastPhTdsMeasure = 0;
   long lastPhTdsOnSwitch = 0;
     // Track previous sensor values
+  u_int lastDistance;
   float lastTemperature;
   float lastPressure;
   float lastWaterTemperature;

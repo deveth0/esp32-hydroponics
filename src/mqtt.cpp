@@ -41,33 +41,24 @@ void onMqttConnect(bool sessionPresent)
   doPublishMqtt = true;
   DEBUG_PRINTLN(F("MQTT ready"));
 
-  char mqttWaterTemperatureTopic[128];
-  char mqttTemperatureTopic[128];
-  char mqttPressureTopic[128];
-  char mqttTDSTopic[128];
-  char mqttPHTopic[128];
-  snprintf_P(mqttWaterTemperatureTopic, 127, PSTR("%s/water"), mqttDeviceTopic);  
-  snprintf_P(mqttTemperatureTopic, 127, PSTR("%s/temperature"), mqttDeviceTopic);
-  snprintf_P(mqttPressureTopic, 127, PSTR("%s/pressure"), mqttDeviceTopic);
-  snprintf_P(mqttTDSTopic, 127, PSTR("%s/tds"), mqttDeviceTopic);
-  snprintf_P(mqttPHTopic, 127, PSTR("%s/ph"), mqttDeviceTopic);
-
-  _createMqttSensor(F("Water"), mqttWaterTemperatureTopic, "temperature", F("°C"));
-  _createMqttSensor(F("Temperature"), mqttTemperatureTopic, "temperature", F("°C"));
-  _createMqttSensor(F("Pressure"), mqttPressureTopic, "pressure", F("Pa"));
-  _createMqttSensor(F("TDS"), mqttTDSTopic, "", F("ppm"));
-  _createMqttSensor(F("PH"), mqttPHTopic, "", F("pH"));
+  _createMqttSensor(F("Water"), mqttDeviceTopic, "water", "temperature", F("°C"));
+  _createMqttSensor(F("Temperature"), mqttDeviceTopic, "temperature", "temperature", F("°C"));
+  _createMqttSensor(F("Distance"), mqttDeviceTopic, "distance", "distance", F("cm"));
+  _createMqttSensor(F("Pressure"), mqttDeviceTopic, "pressure", "pressure", F("Pa"));
+  _createMqttSensor(F("TDS"), mqttDeviceTopic, "tds", "", F("ppm"));
+  _createMqttSensor(F("PH"), mqttDeviceTopic, "ph", "", F("pH"));
 }
 
 // Create an MQTT Sensor for Home Assistant Discovery purposes, this includes a pointer to the topic that is published to in the Loop.
-void _createMqttSensor(const String &name, const String &topic, const String &deviceClass, const String &unitOfMeasurement)
+void _createMqttSensor(const String &name, const String &deviceTopic, const String &topic, const String &deviceClass, const String &unitOfMeasurement)
 {
+  String mqttTopic = deviceTopic + "/" + topic;
   String t = String(F("homeassistant/sensor/")) + mqttClientID + F("/") + name + F("/config");
 
   StaticJsonDocument<600> doc;
 
   doc[F("name")] = String(serverDescription) + " " + name;
-  doc[F("state_topic")] = topic;
+  doc[F("state_topic")] = mqttTopic;
   doc[F("unique_id")] = String(mqttClientID) + name;
   if (unitOfMeasurement != "")
     doc[F("unit_of_measurement")] = unitOfMeasurement;

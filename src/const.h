@@ -9,9 +9,12 @@
 
 #define NUMBER_MEASUREMENTS 5 // number of measurements used to form an average
 #define TEMPERATURE_INTERVAL 5 // Interval to measure temperature in seconds
+#define DISTANCE_INTERVAL 5 // Interval to measure distance in seconds
 #define PH_TDS_INTERVAL 300 // Interval to measure ph and tds in seconds (alternating between the sensors)
 #define PH_ON_TIME 60 // Seconds waiting before taking a ph measurement after switching the sensor on
 #define TDS_ON_TIME 30 // Seconds waiting before taking a tds measurement after switching the sensor on
+
+#define DISTANCE_MAX 50 // max distance in cm
 
 #define BMP280_ADDRESS 0x76
 
@@ -20,6 +23,9 @@
 #define PH_MOSFET_PIN 27
 #define TDS_PIN 35
 #define TDS_MOSFET_PIN 33
+
+#define DISTANCE_PIN_TRIGGER 17
+#define DISTANCE_PIN_ECHO 16
 
 //Access point behavior
 #define AP_BEHAVIOR_BOOT_NO_CONN          0     //Open AP when no connection after boot

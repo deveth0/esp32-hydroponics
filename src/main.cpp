@@ -109,6 +109,9 @@ void Hydroponics::setup()
   pinMode(TDS_PIN, INPUT);
   pinMode(PH_MOSFET_PIN, OUTPUT);
   pinMode(TDS_MOSFET_PIN, OUTPUT);
+
+  pinMode(DISTANCE_PIN_TRIGGER, OUTPUT);
+  pinMode(DISTANCE_PIN_ECHO, INPUT);
 }
 
 void Hydroponics::handleSensors()
@@ -146,11 +149,35 @@ void Hydroponics::handleSensors()
         publishMqtt("temperature", String(temperatureC, 2).c_str());
         lastTemperature = temperatureC;
       }
-      if(pressure != lastPressure){
+      if (pressure != lastPressure)
+      {
         DEBUG_PRINTF("new pressure %f Pa\n", pressure);
         publishMqtt("pressure", String(pressure, 2).c_str());
         lastPressure = pressure;
       }
+    }
+  }
+
+  if (timer - lastDistanceMeasure >= DISTANCE_INTERVAL * 1000)
+  {
+    lastDistanceMeasure = timer;
+
+    digitalWrite(DISTANCE_PIN_TRIGGER, LOW);
+    delayMicroseconds(2);
+
+    digitalWrite(DISTANCE_PIN_TRIGGER, HIGH);
+    delayMicroseconds(10);
+
+    digitalWrite(DISTANCE_PIN_TRIGGER, LOW);
+
+    u_long duration = pulseIn(DISTANCE_PIN_ECHO, HIGH);
+    u_int distance = (duration * .0343) / 2;
+
+    if (distance > 0 && distance < DISTANCE_MAX && distance != lastDistance)
+    {
+      DEBUG_PRINTF("new distance %d cm\n", distance);
+      publishMqtt("distance", String(distance).c_str());
+      lastDistance = distance;
     }
   }
 
