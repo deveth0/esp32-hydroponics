@@ -6,10 +6,13 @@
     "module": "es6",
     "target": "es6",
     "allowJs": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "experimentalDecorators": true
   },
-  "baseUrl": "./web/src" ,
+  "baseUrl": "./web/src",
   "paths": {
-    "Services/*": ["Services/*"]
+    "Services/*": [
+      "Services/*"
+    ]
   }
 }

@@ -103,12 +103,14 @@ void Hydroponics::setup()
 
   // HTTP server page init
   initServer();
+  initApi();
 
   dallasTemperature.begin();
   pinMode(PH_PIN, INPUT);
   pinMode(TDS_PIN, INPUT);
   pinMode(PH_MOSFET_PIN, OUTPUT);
   pinMode(TDS_MOSFET_PIN, OUTPUT);
+  pinMode(PUMP_MOSFET_PIN, OUTPUT);
 
   pinMode(DISTANCE_PIN_TRIGGER, OUTPUT);
   pinMode(DISTANCE_PIN_ECHO, INPUT);
@@ -190,6 +192,8 @@ void Hydroponics::handleSensors()
       {
         DEBUG_PRINTLN("Activating ph mosfet");
         digitalWrite(PH_MOSFET_PIN, HIGH);
+        digitalWrite(PUMP_MOSFET_PIN, HIGH);
+
         lastPhTdsOnSwitch = timer;
       }
       // check if the waiting period is over and we can take a measurement
@@ -211,6 +215,7 @@ void Hydroponics::handleSensors()
         // cleanup and deactivate ph mosfet
         phMeasure = false;
         digitalWrite(PH_MOSFET_PIN, LOW);
+        digitalWrite(PUMP_MOSFET_PIN, LOW);
       }
     }
     else
