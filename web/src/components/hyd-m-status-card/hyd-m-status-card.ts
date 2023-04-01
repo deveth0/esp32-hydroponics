@@ -49,7 +49,7 @@ export class StatusCard extends LitElement {
       return;
     }
 
-    return html` <div>
+    return html` <div class="m-4 border rounded">
       <h3>Status (last update: ${this._statusResponse.sensors.lastUpdate / 1000} s)</h3>
       <ul>
         <li>${this.renderSensor("Distance", this._statusResponse.sensors.distance)}</li>
