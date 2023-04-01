@@ -55,6 +55,10 @@ module.exports = function (env, argv) {
         template: "./web/pages/settings/mqtt.html",
         filename: "settings/mqtt.html",
       }),
+      new HtmlWebpackPlugin({
+        template: "./web/pages/settings/backup.html",
+        filename: "settings/backup.html",
+      }),
       new MiniCssExtractPlugin(),
       argv.mode === "production" &&
         new CompressionPlugin({

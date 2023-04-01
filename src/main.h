@@ -44,6 +44,8 @@
 #include "settings.h"
 #include "web.h"
 #include "api.h"
+#include "sensors.h"
+#include "pump.h"
 
 #ifndef CLIENT_SSID
 #define CLIENT_SSID DEFAULT_CLIENT_SSID
@@ -107,13 +109,6 @@ HYDROPONICS_GLOBAL uint32_t lastReconnectAttempt _INIT(0);
 HYDROPONICS_GLOBAL bool interfacesInited _INIT(false);
 HYDROPONICS_GLOBAL bool wasConnected _INIT(false);
 
-HYDROPONICS_GLOBAL char ntpServerName[33] _INIT("0.pool.ntp.org"); // NTP server to use
-// Time CONFIG
-HYDROPONICS_GLOBAL bool ntpEnabled _INIT(false);  // get internet time. Only required if you use clock overlays or time-activated macros
-HYDROPONICS_GLOBAL bool useAMPM _INIT(false);     // 12h/24h clock format
-HYDROPONICS_GLOBAL byte currentTimezone _INIT(0); // Timezone ID. Refer to timezones array in wled10_ntp.ino
-HYDROPONICS_GLOBAL int utcOffsetSecs _INIT(0);    // Seconds to offset from UTC before timzone calculation
-
 // WiFi CONFIG (all these can be changed via web UI, no need to set them here)
 HYDROPONICS_GLOBAL char clientSSID[33] _INIT(CLIENT_SSID);
 HYDROPONICS_GLOBAL char clientPass[65] _INIT(CLIENT_PASS);
@@ -128,17 +123,6 @@ HYDROPONICS_GLOBAL IPAddress staticSubnet _INIT_N(((255, 255, 255, 0))); // most
 
 // dns server
 HYDROPONICS_GLOBAL DNSServer dnsServer;
-
-// network time
-HYDROPONICS_GLOBAL bool ntpConnected _INIT(false);
-HYDROPONICS_GLOBAL time_t localTime _INIT(0);
-HYDROPONICS_GLOBAL unsigned long ntpLastSyncTime _INIT(999000000L);
-HYDROPONICS_GLOBAL unsigned long ntpPacketSentTime _INIT(999000000L);
-HYDROPONICS_GLOBAL IPAddress ntpServerIP;
-HYDROPONICS_GLOBAL uint16_t ntpLocalPort _INIT(2390);
-HYDROPONICS_GLOBAL uint16_t rolloverMillis _INIT(0);
-HYDROPONICS_GLOBAL float longitude _INIT(0.0);
-HYDROPONICS_GLOBAL float latitude _INIT(0.0);
 
 // Temp buffer
 HYDROPONICS_GLOBAL char *obuf;
@@ -178,6 +162,17 @@ HYDROPONICS_GLOBAL char mqttClientID[41] _INIT("");                  // override
 HYDROPONICS_GLOBAL uint16_t mqttPort _INIT(1883);
 #define HYDROPONICS_MQTT_CONNECTED (mqtt != nullptr && mqtt->connected())
 
+HYDROPONICS_GLOBAL u_int pumpLe10Interval _INIT(0);
+HYDROPONICS_GLOBAL u_int pumpLe15Interval _INIT(0);
+HYDROPONICS_GLOBAL u_int pumpLe20Interval _INIT(0);
+HYDROPONICS_GLOBAL u_int pumpLe25Interval _INIT(0);
+HYDROPONICS_GLOBAL u_int pumpGt25Interval _INIT(0);
+HYDROPONICS_GLOBAL u_int pumpLe10Duration _INIT(0);
+HYDROPONICS_GLOBAL u_int pumpLe15Duration _INIT(0);
+HYDROPONICS_GLOBAL u_int pumpLe20Duration _INIT(0);
+HYDROPONICS_GLOBAL u_int pumpLe25Duration _INIT(0);
+HYDROPONICS_GLOBAL u_int pumpGt25Duration _INIT(0);
+
 // ui style
 HYDROPONICS_GLOBAL bool showWelcomePage _INIT(false);
 
@@ -186,9 +181,6 @@ HYDROPONICS_GLOBAL char serverDescription[33] _INIT("Hydroponics"); // Name of m
 
 // server library objects
 HYDROPONICS_GLOBAL AsyncWebServer server _INIT_N(((80)));
-
-// udp interface objects
-HYDROPONICS_GLOBAL WiFiUDP ntpUdp;
 
 HYDROPONICS_GLOBAL String messageHead, messageSub;
 HYDROPONICS_GLOBAL byte optionType;
@@ -210,12 +202,12 @@ HYDROPONICS_GLOBAL StaticJsonDocument<JSON_BUFFER_SIZE> doc;
 HYDROPONICS_GLOBAL volatile uint8_t jsonBufferLock _INIT(0);
 
 // Track previous sensor values
-HYDROPONICS_GLOBAL u_int lastDistance _INIT(0);
-HYDROPONICS_GLOBAL float lastTemperature _INIT(0);
-HYDROPONICS_GLOBAL float lastPressure _INIT(0);
-HYDROPONICS_GLOBAL float lastWaterTemperature _INIT(0);
-HYDROPONICS_GLOBAL float lastPh _INIT(0);
-HYDROPONICS_GLOBAL float lastTds _INIT(0);
+HYDROPONICS_GLOBAL u_int lastDistance _INIT(__INT_MAX__);
+HYDROPONICS_GLOBAL float lastTemperature _INIT(__FLT_MAX__);
+HYDROPONICS_GLOBAL float lastPressure _INIT(__FLT_MAX__);
+HYDROPONICS_GLOBAL float lastWaterTemperature _INIT(__FLT_MAX__);
+HYDROPONICS_GLOBAL float lastPh _INIT(__FLT_MAX__);
+HYDROPONICS_GLOBAL float lastTds _INIT(__FLT_MAX__);
 
 HYDROPONICS_GLOBAL long lastDistanceMeasure _INIT(0);
 HYDROPONICS_GLOBAL long lastTemperatureMeasure _INIT(0);
@@ -265,21 +257,9 @@ public:
   void reset();
 
   void handleConnection();
-  void handleSensors();
 
   void initAP(bool resetAP = false);
   void initConnection();
   void initInterfaces();
-
-  void enableWatchdog();
-  void disableWatchdog();
-
-private:
-  OneWire oneWire;
-  DallasTemperature dallasTemperature;
-  Adafruit_BMP280 bmp280;
-
-  bool phMeasure = true;
-  long timer;
 };
 #endif // MAIN_H

@@ -3,13 +3,18 @@ import { html, LitElement } from "lit";
 import { apiFetch, apiPostJson } from "../../util";
 
 interface ConfigResponse {
-  pumpConfig: Record<string, number>;
+  pumpConfig: Record<string, PumpConfigEntry>;
+}
+
+interface PumpConfigEntry {
+  interval: number;
+  duration: number;
 }
 
 @customElement("hyd-m-pump-config")
 export class PumpConfig extends LitElement {
   @state()
-  _pumpConfig: Record<string, number> = {};
+  _pumpConfig: Record<string, PumpConfigEntry> = {};
 
   @query("#pump-config-form")
   configForm: HTMLFormElement;
@@ -38,7 +43,18 @@ export class PumpConfig extends LitElement {
 
     const formData = new FormData(this.configForm);
 
-    apiPostJson<unknown, ConfigResponse>("/api/config.json", { pumpConfig: Object.fromEntries(formData) })
+    // collect data in correct format
+    const submitData = [...formData.entries()].reduce((store: Record<string, Record<string, number>>, word) => {
+      const letter = word[0].substring(0, 4);
+      const keyStore =
+        store[letter] || // Does it exist in the object?
+        (store[letter] = {}); // If not, create it as an empty array
+      keyStore[word[0].substring(4).toLowerCase()] = parseInt(word[1].toString());
+
+      return store;
+    }, {});
+
+    apiPostJson<unknown, ConfigResponse>("/api/config.json", { pumpConfig: submitData })
       .then(response => {
         this._pumpConfig = response.pumpConfig;
       })
@@ -69,12 +85,23 @@ export class PumpConfig extends LitElement {
       <label class="block text-gray-700 text-sm font-bold mb-2 mr-10" for=${name}>${label}</label>
       <input
         class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        id=${name}
-        name=${name}
+        id=${name + "Interval"}
+        name=${name + "Interval"}
         required
         min="0"
         max="300"
-        value="${this._pumpConfig[name]}"
+        value="${this._pumpConfig[name]?.interval}"
+        type="number"
+        placeholder="Minutes"
+      />
+      <input
+        class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        id=${name + "Duration"}
+        name=${name + "Duration"}
+        required
+        min="0"
+        max="60"
+        value="${this._pumpConfig[name]?.duration}"
         type="number"
         placeholder="Minutes"
       />

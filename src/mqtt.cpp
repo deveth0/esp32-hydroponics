@@ -47,6 +47,7 @@ void onMqttConnect(bool sessionPresent)
   _createMqttSensor(F("Pressure"), mqttDeviceTopic, "pressure", "pressure", F("Pa"));
   _createMqttSensor(F("TDS"), mqttDeviceTopic, "tds", "", F("ppm"));
   _createMqttSensor(F("PH"), mqttDeviceTopic, "ph", "", F("pH"));
+  _createBinaryMqttSensor(F("Pump"), mqttDeviceTopic, "pump", "running");
 }
 
 // Create an MQTT Sensor for Home Assistant Discovery purposes, this includes a pointer to the topic that is published to in the Loop.
@@ -80,9 +81,38 @@ void _createMqttSensor(const String &name, const String &deviceTopic, const Stri
   mqtt->publish(t.c_str(), 0, true, temp.c_str());
 }
 
+// Create an MQTT Sensor for Home Assistant Discovery purposes, this includes a pointer to the topic that is published to in the Loop.
+void _createBinaryMqttSensor(const String &name, const String &deviceTopic, const String &topic, const String &deviceClass)
+{
+  String mqttTopic = deviceTopic + "/" + topic;
+  String t = String(F("homeassistant/binary_sensor/")) + mqttClientID + F("/") + name + F("/config");
+
+  StaticJsonDocument<600> doc;
+
+  doc[F("name")] = String(serverDescription) + " " + name;
+  doc[F("state_topic")] = mqttTopic;
+  doc[F("unique_id")] = String(mqttClientID) + name;
+  if (deviceClass != "")
+    doc[F("device_class")] = deviceClass;
+
+  JsonObject device = doc.createNestedObject(F("device")); // attach the sensor to the same device
+  device[F("name")] = serverDescription;
+  device[F("identifiers")] = "hydroponics-sensor-" + String(mqttClientID);
+  device[F("manufacturer")] = F("deveth0");
+  device[F("model")] = F("esp32-hydroponics");
+  device[F("sw_version")] = versionString;
+
+  String temp;
+  serializeJson(doc, temp);
+  DEBUG_PRINTLN(t);
+  DEBUG_PRINTLN(temp);
+
+  mqtt->publish(t.c_str(), 0, true, temp.c_str());
+}
+
 void publishMqtt(const char *topic, const char *state)
 {
-  
+
   // Check if MQTT Connected, otherwise it will crash the 8266
   if (HYDROPONICS_MQTT_CONNECTED)
   {

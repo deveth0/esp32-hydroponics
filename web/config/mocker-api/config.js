@@ -40,6 +40,7 @@ const proxy = {
   },
   "GET /api/status.json": (req, res) => {
     return res.json({
+      pump: true,
       sensors: {
         lastUpdate: 89452,
         distance: {
@@ -72,11 +73,26 @@ const proxy = {
   "GET /api/config.json": (req, res) => {
     return res.json({
       pumpConfig: {
-        le10: 300,
-        le15: 200,
-        le20: 150,
-        le25: 100,
-        gt25: 50,
+        le10: {
+          interval: 300,
+          duration: 10,
+        },
+        le15: {
+          interval: 200,
+          duration: 15,
+        },
+        le20: {
+          interval: 150,
+          duration: 20,
+        },
+        le25: {
+          interval: 100,
+          duration: 25,
+        },
+        gt25: {
+          interval: 50,
+          duration: 30,
+        },
       },
     });
   },

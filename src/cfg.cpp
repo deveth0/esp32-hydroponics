@@ -76,17 +76,30 @@ bool deserializeConfig(JsonObject doc, bool fromFS)
   getStringFromJson(mqttPass, if_mqtt["psk"], 65); // normally not present due to security
   getStringFromJson(mqttClientID, if_mqtt[F("cid")], 41);
 
-  getStringFromJson(mqttDeviceTopic, if_mqtt[F("topics")][F("device")], 33); // "wled/test"
-  getStringFromJson(mqttGroupTopic, if_mqtt[F("topics")][F("group")], 33);   // ""
+  getStringFromJson(mqttDeviceTopic, if_mqtt[F("topics")][F("device")], 33);
+  getStringFromJson(mqttGroupTopic, if_mqtt[F("topics")][F("group")], 33);
 
-  JsonObject if_ntp = doc[F("ntp")];
-  CJSON(ntpEnabled, if_ntp["en"]);
-  getStringFromJson(ntpServerName, if_ntp[F("host")], 33); // "1.wled.pool.ntp.org"
-  CJSON(currentTimezone, if_ntp[F("tz")]);
-  CJSON(utcOffsetSecs, if_ntp[F("offset")]);
-  CJSON(useAMPM, if_ntp[F("ampm")]);
-  CJSON(longitude, if_ntp[F("ln")]);
-  CJSON(latitude, if_ntp[F("lt")]);
+  JsonObject pumpConfig = doc[F("pumpConfig")];
+
+  JsonObject le10 = pumpConfig[F("le10")];
+  CJSON(pumpLe10Interval, le10["interval"]);
+  CJSON(pumpLe10Duration, le10["duration"]);
+
+  JsonObject le15 = pumpConfig[F("le15")];
+  CJSON(pumpLe15Interval, le15["interval"]);
+  CJSON(pumpLe15Duration, le15["duration"]);
+
+  JsonObject le20 = pumpConfig[F("le20")];
+  CJSON(pumpLe20Interval, le20["interval"]);
+  CJSON(pumpLe20Duration, le20["duration"]);
+
+  JsonObject le25 = pumpConfig[F("le25")];
+  CJSON(pumpLe25Interval, le25["interval"]);
+  CJSON(pumpLe25Duration, le25["duration"]);
+
+  JsonObject gt25 = pumpConfig[F("gt25")];
+  CJSON(pumpGt25Interval, gt25["interval"]);
+  CJSON(pumpGt25Duration, gt25["duration"]);
 
   if (fromFS)
     return needsSave;
@@ -196,14 +209,27 @@ void serializeConfig()
   if_mqtt_topics[F("device")] = mqttDeviceTopic;
   if_mqtt_topics[F("group")] = mqttGroupTopic;
 
-  JsonObject if_ntp = doc.createNestedObject("ntp");
-  if_ntp["en"] = ntpEnabled;
-  if_ntp[F("host")] = ntpServerName;
-  if_ntp[F("tz")] = currentTimezone;
-  if_ntp[F("offset")] = utcOffsetSecs;
-  if_ntp[F("ampm")] = useAMPM;
-  if_ntp[F("ln")] = longitude;
-  if_ntp[F("lt")] = latitude;
+  JsonObject pumpConfig = doc.createNestedObject("pumpConfig");
+
+  JsonObject le10 = pumpConfig.createNestedObject("le10");
+  le10["interval"] = pumpLe10Interval;
+  le10["duration"] = pumpLe10Duration;
+
+  JsonObject le15 = pumpConfig.createNestedObject("le15");
+  le15["interval"] = pumpLe15Interval;
+  le15["duration"] = pumpLe15Duration;
+
+  JsonObject le20 = pumpConfig.createNestedObject("le20");
+  le20["interval"] = pumpLe20Interval;
+  le20["duration"] = pumpLe20Duration;
+
+  JsonObject le25 = pumpConfig.createNestedObject("le25");
+  le25["interval"] = pumpLe25Interval;
+  le25["duration"] = pumpLe25Duration;
+
+  JsonObject gt25 = pumpConfig.createNestedObject("gt25");
+  gt25["interval"] = pumpGt25Interval;
+  gt25["duration"] = pumpGt25Duration;
 
   serializeJsonPretty(doc, Serial);
 

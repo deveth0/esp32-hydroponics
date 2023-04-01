@@ -8,6 +8,7 @@ interface Sensor {
 }
 
 interface StatusResponse {
+  pump: boolean;
   sensors: {
     lastUpdate: number;
     distance: Sensor;
@@ -51,6 +52,7 @@ export class StatusCard extends LitElement {
 
     return html` <div class="m-4 border rounded">
       <h3>Status (last update: ${this._statusResponse.sensors.lastUpdate / 1000} s)</h3>
+      <div>Pump: ${this._statusResponse.pump}</div>
       <ul>
         <li>${this.renderSensor("Distance", this._statusResponse.sensors.distance)}</li>
         <li>${this.renderSensor("Pressure", this._statusResponse.sensors.pressure)}</li>
