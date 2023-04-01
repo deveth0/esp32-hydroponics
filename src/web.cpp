@@ -36,6 +36,7 @@ void initServer()
   server.serveStatic("/settings.html", HYDROPONICS_FS, "/settings.html");
   server.serveStatic("/settings/wifi.html", HYDROPONICS_FS, "/settings/wifi.html");
   server.serveStatic("/settings/mqtt.html", HYDROPONICS_FS, "/settings/mqtt.html");
+
   server.serveStatic("/app.js", HYDROPONICS_FS, "/app.js").setCacheControl("max-age=600");
   server.serveStatic("/main.css", HYDROPONICS_FS, "/main.css").setCacheControl("max-age=600");
 
@@ -58,9 +59,6 @@ void initServer()
 
   server.on("/settings", HTTP_POST, [](AsyncWebServerRequest *request)
             { handleSettingsPOST(request); });
-
-
-  
 
   server.onNotFound([](AsyncWebServerRequest *request)
                     { request->send(404, "text/html", "Not found"); });

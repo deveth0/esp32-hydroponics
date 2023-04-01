@@ -69,6 +69,20 @@ const proxy = {
       },
     });
   },
+  "GET /api/config.json": (req, res) => {
+    return res.json({
+      pumpConfig: {
+        le10: 300,
+        le15: 200,
+        le20: 150,
+        le25: 100,
+        gt25: 50,
+      },
+    });
+  },
+  "POST /api/config.json": (req, res) => {
+    return res.json(req.body);
+  },
   "GET /api/wifi.json": (req, res) => {
     return res.json({
       status: "success",

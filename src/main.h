@@ -6,6 +6,12 @@
 #define HYDROPONICS_DEBUG
 #define HYDROPONICS_DEBUG_FS
 
+#ifndef HYDROPONICS_WATCHDOG_TIMEOUT
+// 3 seconds should be enough to detect a lockup
+// define HYDROPONICS_WATCHDOG_TIMEOUT=0 to disable watchdog, default
+#define HYDROPONICS_WATCHDOG_TIMEOUT 0
+#endif
+
 #include <Arduino.h>
 #include <HardwareSerial.h> // ensure we have the correct "Serial" on new MCUs (depends on ARDUINO_USB_MODE and ARDUINO_USB_CDC_ON_BOOT)
 #include <WiFi.h>
@@ -28,7 +34,6 @@
 #include <ESPAsyncWebServer.h>
 #include <WiFiUdp.h>
 #include <DNSServer.h>
-#include <ArduinoOTA.h>
 
 #include "const.h"
 #include "util.h"
@@ -102,7 +107,7 @@ HYDROPONICS_GLOBAL uint32_t lastReconnectAttempt _INIT(0);
 HYDROPONICS_GLOBAL bool interfacesInited _INIT(false);
 HYDROPONICS_GLOBAL bool wasConnected _INIT(false);
 
-HYDROPONICS_GLOBAL char ntpServerName[33] _INIT("0.wled.pool.ntp.org"); // NTP server to use
+HYDROPONICS_GLOBAL char ntpServerName[33] _INIT("0.pool.ntp.org"); // NTP server to use
 // Time CONFIG
 HYDROPONICS_GLOBAL bool ntpEnabled _INIT(false);  // get internet time. Only required if you use clock overlays or time-activated macros
 HYDROPONICS_GLOBAL bool useAMPM _INIT(false);     // 12h/24h clock format
@@ -265,6 +270,9 @@ public:
   void initAP(bool resetAP = false);
   void initConnection();
   void initInterfaces();
+
+  void enableWatchdog();
+  void disableWatchdog();
 
 private:
   OneWire oneWire;

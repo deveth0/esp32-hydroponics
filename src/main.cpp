@@ -1,7 +1,7 @@
 #define HYDROPONICS_DEFINE_GLOBAL_VARS // only in one source file, main.cpp!
 
 #include "main.h"
-#include <Arduino.h>
+#include <AsyncElegantOTA.h>
 
 Hydroponics::Hydroponics()
 {
@@ -49,6 +49,19 @@ void Hydroponics::loop()
   if (doCloseFile)
   {
     closeFile();
+    yield();
+  }
+
+  if (lastMqttReconnectAttempt > millis())
+  {
+    rolloverMillis++;
+    lastMqttReconnectAttempt = 0;
+    ntpLastSyncTime = 0;
+  }
+  if (millis() - lastMqttReconnectAttempt > 30000 || lastMqttReconnectAttempt == 0)
+  { // lastMqttReconnectAttempt==0 forces immediate broadcast
+    lastMqttReconnectAttempt = millis();
+    initMqtt();
     yield();
   }
 }
@@ -385,9 +398,10 @@ void Hydroponics::initInterfaces()
 
     DEBUG_PRINTLN(F("mDNS started"));
     MDNS.addService("http", "tcp", 80);
-    MDNS.addService("wled", "tcp", 80);
-    MDNS.addServiceTxt("wled", "tcp", "mac", escapedMac.c_str());
   }
+
+  AsyncElegantOTA.begin(&server);
+
   server.begin();
 
   if (ntpEnabled)
@@ -476,4 +490,38 @@ void Hydroponics::initConnection()
 
   WiFi.setSleep(false);
   WiFi.setHostname(hostname);
+}
+
+void Hydroponics::enableWatchdog()
+{
+#if HYDROPONICS_WATCHDOG_TIMEOUT > 0
+#ifdef ARDUINO_ARCH_ESP32
+  esp_err_t watchdog = esp_task_wdt_init(HYDROPONICS_WATCHDOG_TIMEOUT, true);
+  DEBUG_PRINT(F("Watchdog enabled: "));
+  if (watchdog == ESP_OK)
+  {
+    DEBUG_PRINTLN(F("OK"));
+  }
+  else
+  {
+    DEBUG_PRINTLN(watchdog);
+    return;
+  }
+  esp_task_wdt_add(NULL);
+#else
+  ESP.wdtEnable(HYDROPONICS_WATCHDOG_TIMEOUT * 1000);
+#endif
+#endif
+}
+
+void Hydroponics::disableWatchdog()
+{
+#if HYDROPONICS_WATCHDOG_TIMEOUT > 0
+  DEBUG_PRINTLN(F("Watchdog: disabled"));
+#ifdef ARDUINO_ARCH_ESP32
+  esp_task_wdt_delete(NULL);
+#else
+  ESP.wdtDisable();
+#endif
+#endif
 }
