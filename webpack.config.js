@@ -48,6 +48,10 @@ module.exports = function (env, argv) {
         filename: "settings.html",
       }),
       new HtmlWebpackPlugin({
+        template: "./web/pages/settings/sensors.html",
+        filename: "settings/sensors.html",
+      }),
+      new HtmlWebpackPlugin({
         template: "./web/pages/settings/wifi.html",
         filename: "settings/wifi.html",
       }),

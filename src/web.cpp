@@ -35,6 +35,7 @@ void initServer()
   server.serveStatic("/welcome.html", HYDROPONICS_FS, "/welcome.html");
   server.serveStatic("/settings.html", HYDROPONICS_FS, "/settings.html");
   server.serveStatic("/settings/wifi.html", HYDROPONICS_FS, "/settings/wifi.html");
+  server.serveStatic("/settings/sensors.html", HYDROPONICS_FS, "/settings/sensors.html");
   server.serveStatic("/settings/mqtt.html", HYDROPONICS_FS, "/settings/mqtt.html");
   server.serveStatic("/settings/backup.html", HYDROPONICS_FS, "/settings/backup.html");
   server.serveStatic("/settings/backup/cfg.json", HYDROPONICS_FS, "/cfg.json");
@@ -69,15 +70,6 @@ void initServer()
   DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Origin"), "*");
   DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Methods"), "*");
   DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Headers"), "*");
-
-  File root = HYDROPONICS_FS.open("/");
-  File file = root.openNextFile();
-  while (file)
-  {
-
-    DEBUG_PRINTLN(file.name());
-    file = root.openNextFile();
-  }
 }
 
 void handleSettingsPOST(AsyncWebServerRequest *request)

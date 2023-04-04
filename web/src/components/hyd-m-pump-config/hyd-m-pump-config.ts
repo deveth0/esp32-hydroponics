@@ -29,7 +29,7 @@ export class PumpConfig extends LitElement {
   }
 
   fetchConfig() {
-    apiFetch<ConfigResponse>("/api/config.json")
+    apiFetch<ConfigResponse>("/api/config/pump.json")
       .then(response => {
         this._pumpConfig = response.pumpConfig;
       })
@@ -54,7 +54,7 @@ export class PumpConfig extends LitElement {
       return store;
     }, {});
 
-    apiPostJson<unknown, ConfigResponse>("/api/config.json", { pumpConfig: submitData })
+    apiPostJson<unknown, ConfigResponse>("/api/config/pump.json", { pumpConfig: submitData })
       .then(response => {
         this._pumpConfig = response.pumpConfig;
       })

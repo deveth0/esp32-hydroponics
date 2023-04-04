@@ -52,6 +52,8 @@ void SensorsHandler::handleSensors()
     }
 
     temperatureC = roundf((temperatureC / NUMBER_MEASUREMENTS) * 10) / 10;
+    // calibration
+    temperatureC = temperatureC + waterTempAdjustment;
 
     if (temperatureC != lastWaterTemperature)
     {
@@ -64,6 +66,7 @@ void SensorsHandler::handleSensors()
     {
 
       temperatureC = roundf((bmp280.readTemperature() * 10) / 10);
+      temperatureC = temperatureC + tempAdjustment;
       float pressure = roundf((bmp280.readPressure() * 0.1) / 10);
       if (temperatureC != lastTemperature)
       {
@@ -121,8 +124,7 @@ void SensorsHandler::handleSensors()
         DEBUG_PRINTLN("Finished waiting for ph sensor to heat up");
         lastPhTdsMeasure = timer;
 
-        float phValue = readAverage(PH_PIN, NUMBER_MEASUREMENTS) * (float)5.0 / 4095.0;
-        phValue = roundf((phValue)*10) / 10;
+        float phValue = readPhValue();
 
         if (phValue != lastPh)
         {
@@ -151,15 +153,7 @@ void SensorsHandler::handleSensors()
         DEBUG_PRINTLN("Perform tds measurement");
         lastPhTdsMeasure = timer;
 
-        float tdsRead = readAverage(TDS_PIN, NUMBER_MEASUREMENTS);
-
-        float averageVoltage = tdsRead * (float)3.3 / 4095.0; // read the analog value more stable by the median filtering algorithm, and convert to voltage value
-
-        float compensationCoefficient = 1.0 + 0.02 * (lastTemperature - 25.0);                                                                                                                 // temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
-        float compensationVolatge = averageVoltage / compensationCoefficient;                                                                                                                  // temperature compensation
-        float tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge - 255.86 * compensationVolatge * compensationVolatge + 857.39 * compensationVolatge) * 0.5; // convert voltage value to tds value
-
-        tdsValue = roundf(tdsValue / 100) * 100;
+        float tdsValue = readTDSValue();
 
         if (tdsValue != lastTds)
         {
@@ -172,4 +166,30 @@ void SensorsHandler::handleSensors()
       }
     }
   }
+}
+
+float SensorsHandler::readPhValue()
+{
+  float slope = (7.0 - 4.0) / ((phNeutralVoltage - 1500.0) / 5.0 - (phAcidVoltage - 1500.0) / 5.0); // two point: (_neutralVoltage,7.0),(_acidVoltage,4.0)
+  float intercept = 7.0 - slope * (phNeutralVoltage - 1500.0) / 5.0;
+
+  float voltage = readAverage(PH_PIN, NUMBER_MEASUREMENTS) * (float)5.0 / 4095.0;
+  voltage = roundf((voltage)*10) / 10;
+
+  return slope * (voltage - 1500.0) / 3.0 + intercept; // y = k*x + b
+}
+
+
+float SensorsHandler::readTDSValue()
+{
+  float tdsRead = readAverage(TDS_PIN, NUMBER_MEASUREMENTS);
+
+  float averageVoltage = tdsRead * (float)3.3 / 4095.0; // read the analog value more stable by the median filtering algorithm, and convert to voltage value
+
+  float compensationCoefficient = 1.0 + 0.02 * (lastTemperature - 25.0);                                                                                                                 // temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
+  float compensationVolatge = averageVoltage / compensationCoefficient;                                                                                                                  // temperature compensation
+  float tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge - 255.86 * compensationVolatge * compensationVolatge + 857.39 * compensationVolatge) * 0.5; // convert voltage value to tds value
+
+  tdsValue = roundf(tdsValue / 100) * 100;
+  return tdsValue;
 }

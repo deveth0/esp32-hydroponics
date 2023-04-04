@@ -214,6 +214,15 @@ HYDROPONICS_GLOBAL long lastTemperatureMeasure _INIT(0);
 HYDROPONICS_GLOBAL long lastPhTdsMeasure _INIT(0);
 HYDROPONICS_GLOBAL long lastPhTdsOnSwitch _INIT(0);
 
+// adjustment factors for calibration
+HYDROPONICS_GLOBAL float tempAdjustment _INIT(0);
+HYDROPONICS_GLOBAL float waterTempAdjustment _INIT(0);
+// voltages for ph calibration
+HYDROPONICS_GLOBAL float phNeutralVoltage _INIT(1500.0);
+HYDROPONICS_GLOBAL float phAcidVoltage _INIT(2032.44);
+
+
+
 #define DEBUGOUT Serial
 
 #ifdef HYDROPONICS_DEBUG

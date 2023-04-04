@@ -14,30 +14,6 @@ let status = {
   height: 77.0,
 };
 const proxy = {
-  "PUT /api/config": (req, res) => {
-    const query = req.query;
-
-    Object.keys(query).map(k => {
-      const val = query[k];
-      if (val === "true") query[k] = true;
-      if (val === "false") query[k] = false;
-      if (!isNaN(val)) query[k] = parseInt(val);
-    });
-
-    Object.assign(status, query);
-    return res.json(status);
-  },
-  "PUT /api/calibrate": (req, res) => {
-    //status.calibrated = true;
-    return res.json(status);
-  },
-  "DELETE /api/calibrate": (req, res) => {
-    status.calibrated = false;
-    return res.json(status);
-  },
-  "PUT /api/moveLaser": (req, res) => {
-    return res.json({});
-  },
   "GET /api/status.json": (req, res) => {
     return res.json({
       pump: true,
@@ -70,7 +46,21 @@ const proxy = {
       },
     });
   },
-  "GET /api/config.json": (req, res) => {
+  "GET /api/config/sensors.json": (req, res) => {
+    return res.json({
+      "ph":{
+        "neutralVoltage": 1500.0,
+        "acidVoltage": 2032.44
+      },
+      "temperature":{
+        "adjustment": 0.0
+      },
+      "waterTemperature": {
+        "adjustment": 0.0
+      }
+    });
+  },
+  "GET /api/config/pump.json": (req, res) => {
     return res.json({
       pumpConfig: {
         le10: {
@@ -96,7 +86,7 @@ const proxy = {
       },
     });
   },
-  "POST /api/config.json": (req, res) => {
+  "POST /api/config/pump.json": (req, res) => {
     return res.json(req.body);
   },
   "GET /api/wifi.json": (req, res) => {

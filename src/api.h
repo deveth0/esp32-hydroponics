@@ -8,8 +8,18 @@ void initApi();
  * Return json with the current status
  */
 void handleApiStatus(AsyncWebServerRequest *request);
-void handleApiConfig(AsyncWebServerRequest *request);
-void handleApiConfigPOST(AsyncWebServerRequest *request, JsonVariant &json);
+
+/**
+ * Read / write sensors config
+*/
+void handleApiConfigSensors(AsyncWebServerRequest *request);
+void handleApiConfigSensorsPOST(AsyncWebServerRequest *request, JsonVariant &json);
+
+/**
+ * Read / write pump config
+*/
+void handleApiConfigPump(AsyncWebServerRequest *request);
+void handleApiConfigPumpPOST(AsyncWebServerRequest *request, JsonVariant &json);
 
 void handleWiFiNetworkList(AsyncWebServerRequest *request);
 
