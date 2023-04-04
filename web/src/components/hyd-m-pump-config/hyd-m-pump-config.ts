@@ -82,7 +82,7 @@ export class PumpConfig extends LitElement {
 
   renderFormInput(label: string, name: string) {
     return html` <div class="mb-4 flex">
-      <label class="block text-gray-700 text-sm font-bold mb-2 mr-10" for=${name}>${label}</label>
+      <label class="block text-gray-700 text-sm font-bold mb-2 mr-10" for=${name + "Interval"}>${label}</label>
       <input
         class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
         id=${name + "Interval"}

@@ -116,6 +116,11 @@ bool deserializeConfig(JsonObject doc, bool fromFS)
   JsonObject waterTempSensor = sensorsConfig[F("waterTemperature")];
   CJSON(waterTempAdjustment, waterTempSensor["adjustment"]);
 
+  JsonObject tank = sensorsConfig[F("tank")];
+  CJSON(tankHeight, tank["height"]);
+  CJSON(tankWidth, tank["width"]);
+  CJSON(tankLength, tank["length"]);
+
   if (fromFS)
     return needsSave;
   // if from /json/cfg
@@ -247,13 +252,17 @@ void serializeConfig()
 
   JsonObject ph = sensorsConfig.createNestedObject("ph");
   ph["neutralVoltage"] = phNeutralVoltage;
-    ph["acidVoltage"] = phAcidVoltage;
+  ph["acidVoltage"] = phAcidVoltage;
 
   JsonObject tempSensor = sensorsConfig.createNestedObject("temperature");
-  ph["adjustment"] = tempAdjustment;
-    JsonObject waterTempSensor = sensorsConfig.createNestedObject("waterTemperature");
-  ph["adjustment"] = waterTempAdjustment;
-    
+  tempSensor["adjustment"] = tempAdjustment;
+  JsonObject waterTempSensor = sensorsConfig.createNestedObject("waterTemperature");
+  waterTempSensor["adjustment"] = waterTempAdjustment;
+  JsonObject tank = sensorsConfig.createNestedObject("tank");
+  tank["width"] = tankWidth;
+  tank["height"] = tankHeight;
+  tank["length"] = tankLength;
+
   serializeJsonPretty(doc, Serial);
 
   File f = HYDROPONICS_FS.open("/cfg.json", "w");

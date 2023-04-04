@@ -36,6 +36,11 @@ void handleApiConfigSensors(AsyncWebServerRequest *request)
   sensor = doc.createNestedObject("waterTemperature");
   sensor["adjustment"] = waterTempAdjustment;
 
+  sensor = doc.createNestedObject("tank");
+  sensor["width"] = tankWidth;
+  sensor["height"] = tankHeight;
+  sensor["length"] = tankLength;
+
   String data;
   serializeJson(doc, data);
   request->send(200, "application/json", data);
@@ -51,6 +56,10 @@ void handleApiConfigSensorsPOST(AsyncWebServerRequest *request, JsonVariant &jso
 
   tempAdjustment = data["temperature"]["adjustment"];
   waterTempAdjustment = data["waterTemperature"]["adjustment"];
+
+  tankWidth = data["tank"]["width"];
+  tankHeight = data["tank"]["height"];
+  tankLength = data["tank"]["length"];
 
   doSerializeConfig = true;
 
@@ -116,10 +125,12 @@ void handleApiStatus(AsyncWebServerRequest *request)
   sensors["lastUpdate"] = lastUpdate;
 
   addSensorStatus(sensors, F("distance"), F("cm"), lastDistance != __INT_MAX__ ? lastDistance : 0);
+  addSensorStatus(sensors, F("volume"), F("L"), lastVolume != __FLT_MAX__ ? lastVolume : 0);
   addSensorStatus(sensors, F("pressure"), F("Pa"), lastPressure != __FLT_MAX__ ? lastPressure : 0);
   addSensorStatus(sensors, F("temperature"), F("°C"), lastTemperature != __FLT_MAX__ ? lastTemperature : 0);
   addSensorStatus(sensors, F("waterTemperature"), F("°C"), lastWaterTemperature != __FLT_MAX__ ? lastWaterTemperature : 0);
   addSensorStatus(sensors, F("ph"), F("pH"), lastPh != __FLT_MAX__ ? lastPh : 0);
+  addSensorStatus(sensors, F("phVoltage"), F("V"), lastPhVoltage);
   addSensorStatus(sensors, F("tds"), F("ppm"), lastTds != __FLT_MAX__ ? lastTds : 0);
 
   String data;

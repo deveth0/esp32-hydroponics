@@ -2,17 +2,6 @@ const delay = require("mocker-api/lib/delay");
 
 const DELAY_TIME = 500;
 
-let status = {
-  autoMode: false,
-  power: 100,
-  calibrated: false,
-  x: 26.0,
-  y: 38.0,
-  rotationX: 40,
-  rotationY: 50,
-  width: 52.0,
-  height: 77.0,
-};
 const proxy = {
   "GET /api/status.json": (req, res) => {
     return res.json({
@@ -22,6 +11,10 @@ const proxy = {
         distance: {
           unit: "cm",
           value: 7,
+        },
+        volume: {
+          unit: "L",
+          value: 12,
         },
         pressure: {
           unit: "Pa",
@@ -39,6 +32,10 @@ const proxy = {
           unit: "pH",
           value: 0,
         },
+        phVoltage: {
+          unit: "mV",
+          value: 1312,
+        },
         tds: {
           unit: "ppm",
           value: 0,
@@ -48,17 +45,25 @@ const proxy = {
   },
   "GET /api/config/sensors.json": (req, res) => {
     return res.json({
-      "ph":{
-        "neutralVoltage": 1500.0,
-        "acidVoltage": 2032.44
+      ph: {
+        neutralVoltage: 1500.0,
+        acidVoltage: 2032.44,
       },
-      "temperature":{
-        "adjustment": 0.0
+      temperature: {
+        adjustment: 0.0,
       },
-      "waterTemperature": {
-        "adjustment": 0.0
-      }
+      waterTemperature: {
+        adjustment: 0.0,
+      },
+      tank: {
+        width: 10.0,
+        height: 12.0,
+        length: 14.0,
+      },
     });
+  },
+  "POST /api/config/sensors.json": (req, res) => {
+    return res.json(req.body);
   },
   "GET /api/config/pump.json": (req, res) => {
     return res.json({

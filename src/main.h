@@ -203,10 +203,12 @@ HYDROPONICS_GLOBAL volatile uint8_t jsonBufferLock _INIT(0);
 
 // Track previous sensor values
 HYDROPONICS_GLOBAL u_int lastDistance _INIT(__INT_MAX__);
+HYDROPONICS_GLOBAL float lastVolume _INIT(__FLT_MAX__);
 HYDROPONICS_GLOBAL float lastTemperature _INIT(__FLT_MAX__);
 HYDROPONICS_GLOBAL float lastPressure _INIT(__FLT_MAX__);
 HYDROPONICS_GLOBAL float lastWaterTemperature _INIT(__FLT_MAX__);
 HYDROPONICS_GLOBAL float lastPh _INIT(__FLT_MAX__);
+HYDROPONICS_GLOBAL float lastPhVoltage _INIT(0);
 HYDROPONICS_GLOBAL float lastTds _INIT(__FLT_MAX__);
 
 HYDROPONICS_GLOBAL long lastDistanceMeasure _INIT(0);
@@ -218,10 +220,12 @@ HYDROPONICS_GLOBAL long lastPhTdsOnSwitch _INIT(0);
 HYDROPONICS_GLOBAL float tempAdjustment _INIT(0);
 HYDROPONICS_GLOBAL float waterTempAdjustment _INIT(0);
 // voltages for ph calibration
-HYDROPONICS_GLOBAL float phNeutralVoltage _INIT(1500.0);
-HYDROPONICS_GLOBAL float phAcidVoltage _INIT(2032.44);
+HYDROPONICS_GLOBAL float phNeutralVoltage _INIT(1380.0);
+HYDROPONICS_GLOBAL float phAcidVoltage _INIT(1855);
 
-
+HYDROPONICS_GLOBAL float tankWidth _INIT(0);
+HYDROPONICS_GLOBAL float tankLength _INIT(0);
+HYDROPONICS_GLOBAL float tankHeight _INIT(0);
 
 #define DEBUGOUT Serial
 

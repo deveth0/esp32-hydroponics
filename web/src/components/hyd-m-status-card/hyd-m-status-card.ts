@@ -16,7 +16,9 @@ interface StatusResponse {
     temperature: Sensor;
     waterTemperature: Sensor;
     ph: Sensor;
+    phVoltage: Sensor;
     tds: Sensor;
+    volume: Sensor;
   };
 }
 
@@ -55,10 +57,12 @@ export class StatusCard extends LitElement {
       <div>Pump: ${this._statusResponse.pump}</div>
       <ul>
         <li>${this.renderSensor("Distance", this._statusResponse.sensors.distance)}</li>
+        <li>${this.renderSensor("Volume", this._statusResponse.sensors.volume)}</li>
         <li>${this.renderSensor("Pressure", this._statusResponse.sensors.pressure)}</li>
         <li>${this.renderSensor("Temperature", this._statusResponse.sensors.temperature)}</li>
         <li>${this.renderSensor("Water Temperature", this._statusResponse.sensors.waterTemperature)}</li>
         <li>${this.renderSensor("PH", this._statusResponse.sensors.ph)}</li>
+        <li>${this.renderSensor("PH Voltage", this._statusResponse.sensors.phVoltage)}</li>
         <li>${this.renderSensor("TDS", this._statusResponse.sensors.tds)}</li>
       </ul>
     </div>`;

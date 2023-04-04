@@ -103,6 +103,17 @@ void SensorsHandler::handleSensors()
       DEBUG_PRINTF("new distance %d cm\n", distance);
       publishMqtt("distance", String(distance).c_str());
       lastDistance = distance;
+
+      if (tankWidth != 0 && tankHeight != 0 && tankLength != 0)
+      {
+        float fillHeight = tankHeight - lastDistance;
+
+        lastVolume = (fillHeight * tankLength * tankWidth) / 1000;
+        lastVolume = roundf(lastVolume);
+
+        DEBUG_PRINTF("new volume %d L\n", lastVolume);
+        publishMqtt("volume", String(lastVolume).c_str());
+      }
     }
   }
 
@@ -170,21 +181,22 @@ void SensorsHandler::handleSensors()
 
 float SensorsHandler::readPhValue()
 {
-  float slope = (7.0 - 4.0) / ((phNeutralVoltage - 1500.0) / 5.0 - (phAcidVoltage - 1500.0) / 5.0); // two point: (_neutralVoltage,7.0),(_acidVoltage,4.0)
-  float intercept = 7.0 - slope * (phNeutralVoltage - 1500.0) / 5.0;
+  float slope = (7.0 - 4.0) / ((phNeutralVoltage - 1500.0) / 3.0 - (phAcidVoltage - 1500.0) / 3.0); // two point: (_neutralVoltage,7.0),(_acidVoltage,4.0)
+  float intercept = 7.0 - slope * (phNeutralVoltage - 1500.0) / 3.0;
 
-  float voltage = readAverage(PH_PIN, NUMBER_MEASUREMENTS) * (float)5.0 / 4095.0;
-  voltage = roundf((voltage)*10) / 10;
+  lastPhVoltage = readAverage(PH_PIN, NUMBER_MEASUREMENTS) * ((float)3.3 / 4095.0);
 
-  return slope * (voltage - 1500.0) / 3.0 + intercept; // y = k*x + b
+  DEBUG_PRINTF("lastPhVoltage: %f", lastPhVoltage);
+
+  float phValue = slope * ((lastPhVoltage * 1000) - 1500.0) / 3.0 + intercept;
+  return roundf((phValue)*10) / 10;
 }
-
 
 float SensorsHandler::readTDSValue()
 {
   float tdsRead = readAverage(TDS_PIN, NUMBER_MEASUREMENTS);
 
-  float averageVoltage = tdsRead * (float)3.3 / 4095.0; // read the analog value more stable by the median filtering algorithm, and convert to voltage value
+  float averageVoltage = tdsRead * ((float)3.3 / 4095.0); // read the analog value more stable by the median filtering algorithm, and convert to voltage value
 
   float compensationCoefficient = 1.0 + 0.02 * (lastTemperature - 25.0);                                                                                                                 // temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
   float compensationVolatge = averageVoltage / compensationCoefficient;                                                                                                                  // temperature compensation
