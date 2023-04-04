@@ -2,42 +2,7 @@ const delay = require("mocker-api/lib/delay");
 
 const DELAY_TIME = 500;
 
-let status = {
-  autoMode: false,
-  power: 100,
-  calibrated: false,
-  x: 26.0,
-  y: 38.0,
-  rotationX: 40,
-  rotationY: 50,
-  width: 52.0,
-  height: 77.0,
-};
 const proxy = {
-  "PUT /api/config": (req, res) => {
-    const query = req.query;
-
-    Object.keys(query).map(k => {
-      const val = query[k];
-      if (val === "true") query[k] = true;
-      if (val === "false") query[k] = false;
-      if (!isNaN(val)) query[k] = parseInt(val);
-    });
-
-    Object.assign(status, query);
-    return res.json(status);
-  },
-  "PUT /api/calibrate": (req, res) => {
-    //status.calibrated = true;
-    return res.json(status);
-  },
-  "DELETE /api/calibrate": (req, res) => {
-    status.calibrated = false;
-    return res.json(status);
-  },
-  "PUT /api/moveLaser": (req, res) => {
-    return res.json({});
-  },
   "GET /api/status.json": (req, res) => {
     return res.json({
       pump: true,
@@ -46,6 +11,10 @@ const proxy = {
         distance: {
           unit: "cm",
           value: 7,
+        },
+        volume: {
+          unit: "L",
+          value: 12,
         },
         pressure: {
           unit: "Pa",
@@ -63,6 +32,10 @@ const proxy = {
           unit: "pH",
           value: 0,
         },
+        phVoltage: {
+          unit: "mV",
+          value: 1312,
+        },
         tds: {
           unit: "ppm",
           value: 0,
@@ -70,7 +43,29 @@ const proxy = {
       },
     });
   },
-  "GET /api/config.json": (req, res) => {
+  "GET /api/config/sensors.json": (req, res) => {
+    return res.json({
+      ph: {
+        neutralVoltage: 1500.0,
+        acidVoltage: 2032.44,
+      },
+      temperature: {
+        adjustment: 0.0,
+      },
+      waterTemperature: {
+        adjustment: 0.0,
+      },
+      tank: {
+        width: 10.0,
+        height: 12.0,
+        length: 14.0,
+      },
+    });
+  },
+  "POST /api/config/sensors.json": (req, res) => {
+    return res.json(req.body);
+  },
+  "GET /api/config/pump.json": (req, res) => {
     return res.json({
       pumpConfig: {
         le10: {
@@ -96,7 +91,7 @@ const proxy = {
       },
     });
   },
-  "POST /api/config.json": (req, res) => {
+  "POST /api/config/pump.json": (req, res) => {
     return res.json(req.body);
   },
   "GET /api/wifi.json": (req, res) => {

@@ -7,18 +7,66 @@ void initApi()
   server.on("/api/status.json", HTTP_GET, [](AsyncWebServerRequest *request)
             { handleApiStatus(request); });
 
-  server.on("/api/config.json", HTTP_GET, [](AsyncWebServerRequest *request)
-            { handleApiConfig(request); });
+  server.on("/api/config/sensors.json", HTTP_GET, [](AsyncWebServerRequest *request)
+            { handleApiConfigSensors(request); });
+  server.addHandler(new AsyncCallbackJsonWebHandler("/api/config/sensors.json", [](AsyncWebServerRequest *request, JsonVariant &json)
+                                                    { handleApiConfigSensorsPOST(request, json); }));
+
+  server.on("/api/config/pump.json", HTTP_GET, [](AsyncWebServerRequest *request)
+            { handleApiConfigPump(request); });
+
+  server.addHandler(new AsyncCallbackJsonWebHandler("/api/config/pump.json", [](AsyncWebServerRequest *request, JsonVariant &json)
+                                                    { handleApiConfigPumpPOST(request, json); }));
 
   server.on("/api/wifi.json", HTTP_GET, [](AsyncWebServerRequest *request)
             { handleWiFiNetworkList(request); });
-
-  AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/api/config.json", [](AsyncWebServerRequest *request, JsonVariant &json)
-                                                                         { handleApiConfigPOST(request, json); });
-  server.addHandler(handler);
 }
 
-void handleApiConfig(AsyncWebServerRequest *request)
+void handleApiConfigSensors(AsyncWebServerRequest *request)
+{
+  DynamicJsonDocument doc(1024);
+
+  JsonObject sensor = doc.createNestedObject("ph");
+  sensor["neutralVoltage"] = phNeutralVoltage;
+  sensor["acidVoltage"] = phAcidVoltage;
+
+  sensor = doc.createNestedObject("temperature");
+  sensor["adjustment"] = tempAdjustment;
+
+  sensor = doc.createNestedObject("waterTemperature");
+  sensor["adjustment"] = waterTempAdjustment;
+
+  sensor = doc.createNestedObject("tank");
+  sensor["width"] = tankWidth;
+  sensor["height"] = tankHeight;
+  sensor["length"] = tankLength;
+
+  String data;
+  serializeJson(doc, data);
+  request->send(200, "application/json", data);
+}
+
+void handleApiConfigSensorsPOST(AsyncWebServerRequest *request, JsonVariant &json)
+{
+
+  StaticJsonDocument<512> data = json.as<JsonObject>();
+
+  phNeutralVoltage = data["ph"]["neutralVoltage"];
+  phAcidVoltage = data["ph"]["acidVoltage"];
+
+  tempAdjustment = data["temperature"]["adjustment"];
+  waterTempAdjustment = data["waterTemperature"]["adjustment"];
+
+  tankWidth = data["tank"]["width"];
+  tankHeight = data["tank"]["height"];
+  tankLength = data["tank"]["length"];
+
+  doSerializeConfig = true;
+
+  handleApiConfigSensors(request);
+}
+
+void handleApiConfigPump(AsyncWebServerRequest *request)
 {
 
   DynamicJsonDocument doc(1024);
@@ -36,7 +84,7 @@ void handleApiConfig(AsyncWebServerRequest *request)
   request->send(200, "application/json", data);
 }
 
-void handleApiConfigPOST(AsyncWebServerRequest *request, JsonVariant &json)
+void handleApiConfigPumpPOST(AsyncWebServerRequest *request, JsonVariant &json)
 {
   StaticJsonDocument<512> data = json.as<JsonObject>();
 
@@ -59,7 +107,7 @@ void handleApiConfigPOST(AsyncWebServerRequest *request, JsonVariant &json)
 
   doSerializeConfig = true;
 
-  handleApiConfig(request);
+  handleApiConfigPump(request);
 }
 
 void handleApiStatus(AsyncWebServerRequest *request)
@@ -77,10 +125,12 @@ void handleApiStatus(AsyncWebServerRequest *request)
   sensors["lastUpdate"] = lastUpdate;
 
   addSensorStatus(sensors, F("distance"), F("cm"), lastDistance != __INT_MAX__ ? lastDistance : 0);
+  addSensorStatus(sensors, F("volume"), F("L"), lastVolume != __FLT_MAX__ ? lastVolume : 0);
   addSensorStatus(sensors, F("pressure"), F("Pa"), lastPressure != __FLT_MAX__ ? lastPressure : 0);
   addSensorStatus(sensors, F("temperature"), F("°C"), lastTemperature != __FLT_MAX__ ? lastTemperature : 0);
   addSensorStatus(sensors, F("waterTemperature"), F("°C"), lastWaterTemperature != __FLT_MAX__ ? lastWaterTemperature : 0);
   addSensorStatus(sensors, F("ph"), F("pH"), lastPh != __FLT_MAX__ ? lastPh : 0);
+  addSensorStatus(sensors, F("phVoltage"), F("V"), lastPhVoltage);
   addSensorStatus(sensors, F("tds"), F("ppm"), lastTds != __FLT_MAX__ ? lastTds : 0);
 
   String data;

@@ -14,7 +14,7 @@ module.exports = function (env, argv) {
     output: {
       path: path.join(__dirname, "dist"),
       publicPath: "/",
-      filename: "app.js",
+      filename: argv.mode === "development" ? "app.js" : "app.[contenthash].js",
     },
     resolve: {
       extensions: [".ts", ".js"],
@@ -48,6 +48,10 @@ module.exports = function (env, argv) {
         filename: "settings.html",
       }),
       new HtmlWebpackPlugin({
+        template: "./web/pages/settings/sensors.html",
+        filename: "settings/sensors.html",
+      }),
+      new HtmlWebpackPlugin({
         template: "./web/pages/settings/wifi.html",
         filename: "settings/wifi.html",
       }),
@@ -59,7 +63,10 @@ module.exports = function (env, argv) {
         template: "./web/pages/settings/backup.html",
         filename: "settings/backup.html",
       }),
-      new MiniCssExtractPlugin(),
+      new MiniCssExtractPlugin({
+        filename: argv.mode === "development" ? "[name].css" : "[name].[contenthash].css",
+        chunkFilename: argv.mode === "development" ? "[id].css" : "[id].[contenthash].css",
+      }),
       argv.mode === "production" &&
         new CompressionPlugin({
           include: /\.(js|css)$/,

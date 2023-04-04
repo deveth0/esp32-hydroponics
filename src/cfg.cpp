@@ -79,6 +79,7 @@ bool deserializeConfig(JsonObject doc, bool fromFS)
   getStringFromJson(mqttDeviceTopic, if_mqtt[F("topics")][F("device")], 33);
   getStringFromJson(mqttGroupTopic, if_mqtt[F("topics")][F("group")], 33);
 
+  // pump config
   JsonObject pumpConfig = doc[F("pumpConfig")];
 
   JsonObject le10 = pumpConfig[F("le10")];
@@ -101,6 +102,25 @@ bool deserializeConfig(JsonObject doc, bool fromFS)
   CJSON(pumpGt25Interval, gt25["interval"]);
   CJSON(pumpGt25Duration, gt25["duration"]);
 
+  // sensors config
+
+  JsonObject sensorsConfig = doc[F("sensors")];
+
+  JsonObject ph = sensorsConfig[F("ph")];
+  CJSON(phNeutralVoltage, ph["neutralVoltage"]);
+  CJSON(phAcidVoltage, ph["acidVoltage"]);
+
+  JsonObject tempSensor = sensorsConfig[F("temperature")];
+  CJSON(tempAdjustment, tempSensor["adjustment"]);
+
+  JsonObject waterTempSensor = sensorsConfig[F("waterTemperature")];
+  CJSON(waterTempAdjustment, waterTempSensor["adjustment"]);
+
+  JsonObject tank = sensorsConfig[F("tank")];
+  CJSON(tankHeight, tank["height"]);
+  CJSON(tankWidth, tank["width"]);
+  CJSON(tankLength, tank["length"]);
+
   if (fromFS)
     return needsSave;
   // if from /json/cfg
@@ -121,8 +141,6 @@ void deserializeConfigFromFS()
 
   if (!requestJSONBufferLock(1))
     return;
-
-  DEBUG_PRINTLN(F("Reading settings from /cfg.json..."));
 
   success = readObjectFromFile("/cfg.json", nullptr, &doc);
   if (!success)
@@ -149,8 +167,6 @@ void deserializeConfigFromFS()
 void serializeConfig()
 {
   serializeConfigSec();
-
-  DEBUG_PRINTLN(F("Writing settings to /cfg.json..."));
 
   if (!requestJSONBufferLock(2))
     return;
@@ -231,9 +247,24 @@ void serializeConfig()
   gt25["interval"] = pumpGt25Interval;
   gt25["duration"] = pumpGt25Duration;
 
+  // sensors config
+  JsonObject sensorsConfig = doc.createNestedObject("sensors");
+
+  JsonObject ph = sensorsConfig.createNestedObject("ph");
+  ph["neutralVoltage"] = phNeutralVoltage;
+  ph["acidVoltage"] = phAcidVoltage;
+
+  JsonObject tempSensor = sensorsConfig.createNestedObject("temperature");
+  tempSensor["adjustment"] = tempAdjustment;
+  JsonObject waterTempSensor = sensorsConfig.createNestedObject("waterTemperature");
+  waterTempSensor["adjustment"] = waterTempAdjustment;
+  JsonObject tank = sensorsConfig.createNestedObject("tank");
+  tank["width"] = tankWidth;
+  tank["height"] = tankHeight;
+  tank["length"] = tankLength;
+
   serializeJsonPretty(doc, Serial);
 
-  DEBUG_PRINTLN("writing config ..");
   File f = HYDROPONICS_FS.open("/cfg.json", "w");
   if (f)
     serializeJson(doc, f);
@@ -246,8 +277,6 @@ void serializeConfig()
 // settings in /wsec.json, not accessible via webserver, for passwords and tokens
 bool deserializeConfigSec()
 {
-  DEBUG_PRINTLN(F("Reading settings from /wsec.json..."));
-
   if (!requestJSONBufferLock(3))
     return false;
 

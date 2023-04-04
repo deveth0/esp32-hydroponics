@@ -84,6 +84,7 @@ void Hydroponics::setup()
 
   if (strcmp(clientSSID, DEFAULT_CLIENT_SSID) == 0)
     showWelcomePage = true;
+    
   WiFi.persistent(false);
 
   // fill in unique mdns default
@@ -276,14 +277,10 @@ void Hydroponics::initConnection()
   {
     WiFi.config(staticIP, staticGateway, staticSubnet, IPAddress(1, 1, 1, 1));
   }
-  else
-  {
-    WiFi.config(IPAddress((uint32_t)0), IPAddress((uint32_t)0), IPAddress((uint32_t)0));
-  }
-
+  
   lastReconnectAttempt = millis();
 
-  DEBUGFS_PRINTF("clientSSID: %s\n", clientSSID);
+  DEBUG_PRINTF("clientSSID: %s\n", clientSSID);
   if (!HYDROPONICS_WIFI_CONFIGURED)
   {
     DEBUG_PRINTLN(F("No connection configured."));

@@ -22,5 +22,8 @@ private:
   Adafruit_BMP280 bmp280;
   bool phMeasure;
   long timer;
+
+  float readPhValue();
+  float readTDSValue();
 };
 #endif
