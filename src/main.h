@@ -210,6 +210,7 @@ HYDROPONICS_GLOBAL float lastWaterTemperature _INIT(__FLT_MAX__);
 HYDROPONICS_GLOBAL float lastPh _INIT(__FLT_MAX__);
 HYDROPONICS_GLOBAL float lastPhVoltage _INIT(0);
 HYDROPONICS_GLOBAL float lastTds _INIT(__FLT_MAX__);
+HYDROPONICS_GLOBAL float lastTdsVoltage _INIT(0);
 
 HYDROPONICS_GLOBAL long lastDistanceMeasure _INIT(0);
 HYDROPONICS_GLOBAL long lastTemperatureMeasure _INIT(0);
@@ -226,6 +227,13 @@ HYDROPONICS_GLOBAL float phAcidVoltage _INIT(1855);
 HYDROPONICS_GLOBAL float tankWidth _INIT(0);
 HYDROPONICS_GLOBAL float tankLength _INIT(0);
 HYDROPONICS_GLOBAL float tankHeight _INIT(0);
+
+HYDROPONICS_GLOBAL u_int numberMeasurements _INIT(20);
+HYDROPONICS_GLOBAL u_int temperatureInterval _INIT(5);
+HYDROPONICS_GLOBAL u_int distanceInterval _INIT(5);
+HYDROPONICS_GLOBAL u_int phTdsInterval _INIT(600);
+HYDROPONICS_GLOBAL u_int phOnTime _INIT(60);
+HYDROPONICS_GLOBAL u_int tdsOnTime _INIT(10);
 
 #define DEBUGOUT Serial
 

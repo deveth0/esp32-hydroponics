@@ -41,6 +41,14 @@ void handleApiConfigSensors(AsyncWebServerRequest *request)
   sensor["height"] = tankHeight;
   sensor["length"] = tankLength;
 
+  sensor = doc.createNestedObject("measurement");
+  sensor["numberMeasurements"] = numberMeasurements;
+  sensor["temperatureInterval"] = temperatureInterval;
+  sensor["distanceInterval"] = distanceInterval;
+  sensor["phTdsInterval"] = phTdsInterval;
+  sensor["phOnTime"] = phOnTime;
+  sensor["tdsOnTime"] = tdsOnTime;
+
   String data;
   serializeJson(doc, data);
   request->send(200, "application/json", data);
@@ -60,6 +68,13 @@ void handleApiConfigSensorsPOST(AsyncWebServerRequest *request, JsonVariant &jso
   tankWidth = data["tank"]["width"];
   tankHeight = data["tank"]["height"];
   tankLength = data["tank"]["length"];
+
+  numberMeasurements = data["measurement"]["numberMeasurements"];
+  temperatureInterval = data["measurement"]["temperatureInterval"];
+  distanceInterval = data["measurement"]["distanceInterval"];
+  phTdsInterval = data["measurement"]["phTdsInterval"];
+  phOnTime = data["measurement"]["phOnTime"];
+  tdsOnTime = data["measurement"]["tdsOnTime"];
 
   doSerializeConfig = true;
 

@@ -7,6 +7,7 @@ interface SensorsConfigResponse {
   temperature: SensorsConfigTemperatureResponse;
   waterTemperature: SensorsConfigTemperatureResponse;
   tank: SensorsConfigTankResponse;
+  measurement: SensorsConfigMeasurementResponse;
 }
 
 interface SensorsConfigPhResponse {
@@ -22,6 +23,15 @@ interface SensorsConfigTankResponse {
   width: number;
   height: number;
   length: number;
+}
+
+interface SensorsConfigMeasurementResponse {
+  numberMeasurements: number;
+  temperatureInterval: number;
+  distanceInterval: number;
+  phTdsInterval: number;
+  phOnTime: number;
+  tdsOnTime: number;
 }
 
 @customElement("hyd-m-sensors-config")
@@ -72,6 +82,14 @@ export class SensorsConfig extends LitElement {
         width: formData.get("tankWidth"),
         length: formData.get("tankLength"),
       },
+      measure: {
+        numberMeasurements: formData.get("numberMeasurements"),
+        temperatureInterval: formData.get("temperatureInterval"),
+        distanceInterval: formData.get("distanceInterval"),
+        phTdsInterval: formData.get("phTdsInterval"),
+        phOnTime: formData.get("phOnTime"),
+        tdsOnTime: formData.get("tdsOnTime"),
+      },
     };
 
     apiPostJson<unknown, SensorsConfigResponse>("/api/config/sensors.json", submitData)
@@ -92,7 +110,7 @@ export class SensorsConfig extends LitElement {
         @submit="${this.handleSubmit}"
       >
         <fieldset>
-          <label for="phAcidVoltage">PH Acid Voltage</label>
+          <label for="phAcidVoltage">PH Acid Voltage (4.0 pH)</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="number"
@@ -100,7 +118,7 @@ export class SensorsConfig extends LitElement {
             name="phAcidVoltage"
             value="${this._sensorsConfig?.ph.acidVoltage}"
           />
-          <label for="phNeutralVoltage">PH Neutral Voltage</label>
+          <label for="phNeutralVoltage">PH Neutral Voltage (7.0 pH)</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="number"
@@ -155,6 +173,68 @@ export class SensorsConfig extends LitElement {
             id="tankLength"
             name="tankLength"
             value="${this._sensorsConfig?.tank.length}"
+          />
+        </fieldset>
+        <fieldset>
+          <label for="numberMeasurements">Number Measurements</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="number"
+            id="numberMeasurements"
+            name="numberMeasurements"
+            min="1"
+            value="${this._sensorsConfig?.measurement.numberMeasurements}"
+          />
+        </fieldset>
+        <fieldset>
+          <label for="temperatureInterval">Temperature Interval</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="number"
+            id="temperatureInterval"
+            name="temperatureInterval"
+            min="1"
+            value="${this._sensorsConfig?.measurement.temperatureInterval}"
+          />
+        </fieldset>
+        <fieldset>
+          <label for="distanceInterval">Distance interval</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="number"
+            id="distanceInterval"
+            name="distanceInterval"
+            value="${this._sensorsConfig?.measurement.distanceInterval}"
+          />
+        </fieldset>
+        <fieldset>
+          <label for="phTdsInterval">PH - TDS Interval</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="number"
+            id="phTdsInterval"
+            name="phTdsInterval"
+            value="${this._sensorsConfig?.measurement.phTdsInterval}"
+          />
+        </fieldset>
+        <fieldset>
+          <label for="phOnTime">PH On Time</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="number"
+            id="phOnTime"
+            name="phOnTime"
+            value="${this._sensorsConfig?.measurement.phOnTime}"
+          />
+        </fieldset>
+        <fieldset>
+          <label for="tdsOnTime">TDS On Time</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="number"
+            id="tdsOnTime"
+            name="tdsOnTime"
+            value="${this._sensorsConfig?.measurement.tdsOnTime}"
           />
         </fieldset>
         <button

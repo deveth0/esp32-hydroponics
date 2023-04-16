@@ -28,7 +28,7 @@ void SensorsHandler::initSensors()
 {
   dallasTemperature.begin();
   pinMode(PH_PIN, INPUT);
-  pinMode(TDS_PIN, INPUT);
+  pinMode(TDS_PIN, INPUT_PULLDOWN);
   pinMode(PH_MOSFET_PIN, OUTPUT);
   pinMode(TDS_MOSFET_PIN, OUTPUT);
   pinMode(PUMP_MOSFET_PIN, OUTPUT);
@@ -40,18 +40,18 @@ void SensorsHandler::initSensors()
 void SensorsHandler::handleSensors()
 {
   timer = millis();
-  if (timer - lastTemperatureMeasure >= TEMPERATURE_INTERVAL * 1000)
+  if (timer - lastTemperatureMeasure >= temperatureInterval * 1000)
   {
     lastTemperatureMeasure = timer;
     float temperatureC = 0;
 
-    for (int i = 0; i < NUMBER_MEASUREMENTS; i++)
+    for (int i = 0; i < numberMeasurements; i++)
     {
       dallasTemperature.requestTemperatures();
       temperatureC += dallasTemperature.getTempCByIndex(0);
     }
 
-    temperatureC = roundf((temperatureC / NUMBER_MEASUREMENTS) * 10) / 10;
+    temperatureC = roundf((temperatureC / numberMeasurements) * 10) / 10;
     // calibration
     temperatureC = temperatureC + waterTempAdjustment;
 
@@ -83,7 +83,7 @@ void SensorsHandler::handleSensors()
     }
   }
 
-  if (timer - lastDistanceMeasure >= DISTANCE_INTERVAL * 1000)
+  if (timer - lastDistanceMeasure >= distanceInterval * 1000)
   {
     lastDistanceMeasure = timer;
 
@@ -117,7 +117,7 @@ void SensorsHandler::handleSensors()
     }
   }
 
-  if (timer - lastPhTdsMeasure >= PH_TDS_INTERVAL * 1000)
+  if (timer - lastPhTdsMeasure >= phTdsInterval * 1000)
   {
     if (phMeasure)
     {
@@ -130,7 +130,7 @@ void SensorsHandler::handleSensors()
         lastPhTdsOnSwitch = timer;
       }
       // check if the waiting period is over and we can take a measurement
-      if (timer - lastPhTdsOnSwitch >= PH_ON_TIME * 1000)
+      if (timer - lastPhTdsOnSwitch >= phOnTime * 1000)
       {
         DEBUG_PRINTLN("Finished waiting for ph sensor to heat up");
         lastPhTdsMeasure = timer;
@@ -141,6 +141,7 @@ void SensorsHandler::handleSensors()
         {
           DEBUG_PRINTF("new ph %f\n", phValue);
           publishMqtt("ph", String(phValue, 2).c_str());
+          publishMqtt("phVoltage", String(lastPhVoltage, 2).c_str());
           lastPh = phValue;
         }
 
@@ -156,10 +157,11 @@ void SensorsHandler::handleSensors()
       {
         DEBUG_PRINTLN("Activating tds mosfet");
         digitalWrite(TDS_MOSFET_PIN, HIGH);
+        pinMode(TDS_PIN, INPUT);
         lastPhTdsOnSwitch = timer;
       }
       // check if the waiting period is over and we can take a measurement
-      if (timer - lastPhTdsOnSwitch >= TDS_ON_TIME * 1000)
+      if (timer - lastPhTdsOnSwitch >= tdsOnTime * 1000)
       {
         DEBUG_PRINTLN("Perform tds measurement");
         lastPhTdsMeasure = timer;
@@ -170,10 +172,13 @@ void SensorsHandler::handleSensors()
         {
           DEBUG_PRINTF("new tds %f ppm\n", tdsValue);
           publishMqtt("tds", String(tdsValue, 2).c_str());
+          publishMqtt("tdsVoltage", String(lastTdsVoltage, 2).c_str());
+          publishMqtt("ec", String(tdsValue * 2, 2).c_str());
           lastTds = tdsValue;
         }
         phMeasure = true;
         digitalWrite(TDS_MOSFET_PIN, LOW);
+        pinMode(TDS_PIN, INPUT_PULLDOWN);
       }
     }
   }
@@ -184,7 +189,7 @@ float SensorsHandler::readPhValue()
   float slope = (7.0 - 4.0) / ((phNeutralVoltage - 1500.0) / 3.0 - (phAcidVoltage - 1500.0) / 3.0); // two point: (_neutralVoltage,7.0),(_acidVoltage,4.0)
   float intercept = 7.0 - slope * (phNeutralVoltage - 1500.0) / 3.0;
 
-  lastPhVoltage = readAverage(PH_PIN, NUMBER_MEASUREMENTS) * ((float)3.3 / 4095.0);
+  lastPhVoltage = readAverage(PH_PIN, numberMeasurements) * ((float)3.3 / 4095.0);
 
   DEBUG_PRINTF("lastPhVoltage: %f", lastPhVoltage);
 
@@ -194,12 +199,12 @@ float SensorsHandler::readPhValue()
 
 float SensorsHandler::readTDSValue()
 {
-  float tdsRead = readAverage(TDS_PIN, NUMBER_MEASUREMENTS);
+  float tdsRead = readAverage(TDS_PIN, numberMeasurements);
 
-  float averageVoltage = tdsRead * ((float)3.3 / 4095.0); // read the analog value more stable by the median filtering algorithm, and convert to voltage value
+  lastTdsVoltage = tdsRead * ((float)3.3 / 4095.0); // read the analog value more stable by the median filtering algorithm, and convert to voltage value
 
   float compensationCoefficient = 1.0 + 0.02 * (lastTemperature - 25.0);                                                                                                                 // temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
-  float compensationVolatge = averageVoltage / compensationCoefficient;                                                                                                                  // temperature compensation
+  float compensationVolatge = lastTdsVoltage / compensationCoefficient;                                                                                                                  // temperature compensation
   float tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge - 255.86 * compensationVolatge * compensationVolatge + 857.39 * compensationVolatge) * 0.5; // convert voltage value to tds value
 
   tdsValue = roundf(tdsValue / 100) * 100;

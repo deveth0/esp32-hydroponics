@@ -121,6 +121,15 @@ bool deserializeConfig(JsonObject doc, bool fromFS)
   CJSON(tankWidth, tank["width"]);
   CJSON(tankLength, tank["length"]);
 
+  JsonObject measurementConfig = doc[F("measurement")];
+
+  CJSON(numberMeasurements, measurementConfig["numberMeasurements"]);
+  CJSON(temperatureInterval, measurementConfig["temperatureInterval"]);
+  CJSON(distanceInterval, measurementConfig["distanceInterval"]);
+  CJSON(phTdsInterval, measurementConfig["phTdsInterval"]);
+  CJSON(phOnTime, measurementConfig["phOnTime"]);
+  CJSON(tdsOnTime, measurementConfig["tdsOnTime"]);
+
   if (fromFS)
     return needsSave;
   // if from /json/cfg
@@ -262,6 +271,15 @@ void serializeConfig()
   tank["width"] = tankWidth;
   tank["height"] = tankHeight;
   tank["length"] = tankLength;
+
+  JsonObject measurement = doc.createNestedObject("measurement");
+
+  measurement["numberMeasurements"] = numberMeasurements;
+  measurement["temperatureInterval"] = temperatureInterval;
+  measurement["distanceInterval"] = distanceInterval;
+  measurement["phTdsInterval"] = phTdsInterval;
+  measurement["phOnTime"] = phOnTime;
+  measurement["tdsOnTime"] = tdsOnTime;
 
   serializeJsonPretty(doc, Serial);
 

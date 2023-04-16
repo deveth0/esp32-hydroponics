@@ -14,7 +14,7 @@ module.exports = function (env, argv) {
     output: {
       path: path.join(__dirname, "dist"),
       publicPath: "/",
-      filename: argv.mode === "development" ? "app.js" : "app.[contenthash].js",
+      filename: "app.js"
     },
     resolve: {
       extensions: [".ts", ".js"],
@@ -64,13 +64,13 @@ module.exports = function (env, argv) {
         filename: "settings/backup.html",
       }),
       new MiniCssExtractPlugin({
-        filename: argv.mode === "development" ? "[name].css" : "[name].[contenthash].css",
-        chunkFilename: argv.mode === "development" ? "[id].css" : "[id].[contenthash].css",
+        filename: "[name].css",
+        chunkFilename: "[id].css",
       }),
       argv.mode === "production" &&
-        new CompressionPlugin({
-          include: /\.(js|css)$/,
-        }),
+      new CompressionPlugin({
+        include: /\.(js|css)$/,
+      }),
     ].filter(n => n),
     optimization: {
       minimize: true,

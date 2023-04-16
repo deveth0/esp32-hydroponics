@@ -60,6 +60,14 @@ const proxy = {
         height: 12.0,
         length: 14.0,
       },
+      measurement: {
+        numberMeasurements: 25,
+        temperatureInterval: 5,
+        distanceInterval: 5,
+        phTdsInterval: 600,
+        phOnTime: 60,
+        tdsOnTime: 10,
+      },
     });
   },
   "POST /api/config/sensors.json": (req, res) => {
