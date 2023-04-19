@@ -7,8 +7,16 @@ interface Sensor {
   value: number;
 }
 
+enum ConnectionStatus {
+  CONNECTED = "Connected",
+  DISCONNECTED = "Disconnected",
+  DISABLED = "Disabled",
+}
+
 interface StatusResponse {
   pump: boolean;
+  wifiStatus: ConnectionStatus;
+  mqttStatus: ConnectionStatus;
   sensors: {
     lastUpdate: number;
     distance: Sensor;
@@ -55,6 +63,8 @@ export class StatusCard extends LitElement {
     return html` <div class="m-4 border rounded p-4">
       <span>Status (last update: ${this._statusResponse.sensors.lastUpdate / 1000} s)</span>
       <div>Pump: ${this._statusResponse.pump}</div>
+      <div>Wifi: ${this._statusResponse.wifiStatus}</div>
+      <div>Mqtt: ${this._statusResponse.mqttStatus}</div>
       <ul>
         <li>
           Volume: ${this._statusResponse.sensors.volume.value} ${this._statusResponse.sensors.volume.unit} (Distance:

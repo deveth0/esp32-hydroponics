@@ -131,7 +131,6 @@ void publishMqtt(const char *topic, const char *state)
   }
 }
 
-// HA autodiscovery was removed in favor of the native integration in HA v0.102.0
 bool initMqtt()
 {
   DEBUG_PRINTLN("initMqtt");

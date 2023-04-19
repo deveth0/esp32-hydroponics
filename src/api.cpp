@@ -148,6 +148,10 @@ void handleApiStatus(AsyncWebServerRequest *request)
   addSensorStatus(sensors, F("phVoltage"), F("V"), lastPhVoltage);
   addSensorStatus(sensors, F("tds"), F("ppm"), lastTds != __FLT_MAX__ ? lastTds : 0);
 
+  sensors["wifiStatus"] = HYDROPONICS_CONNECTED ? F("Connected") : F("Disconnected");
+  sensors["mqttStatus"] = (!mqttEnabled || mqttServer[0] == 0) ? F("Disabled") : HYDROPONICS_MQTT_CONNECTED ? F("Connected")
+                                                                                                            : F("Disconnected");
+
   String data;
   serializeJson(doc, data);
   request->send(200, "application/json", data);
@@ -173,6 +177,7 @@ void handleWiFiNetworkList(AsyncWebServerRequest *request)
   else if (status == WIFI_SCAN_RUNNING)
   {
     doc["status"] = F("inprogress");
+    statusCode = 202
   }
   else
   {

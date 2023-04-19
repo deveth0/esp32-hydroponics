@@ -1,5 +1,8 @@
-export function apiFetch<T>(url: string): Promise<T> {
-  return fetch(url).then(response => {
+import fetchRetry, { RequestInitWithRetry } from "fetch-retry";
+
+export function apiFetch<T>(url: string, init?: RequestInitWithRetry): Promise<T> {
+  const fetch = fetchRetry(global.fetch);
+  return fetch(url, init).then(response => {
     if (!response.ok) {
       throw new Error(response.statusText);
     }

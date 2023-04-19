@@ -6,6 +6,8 @@ const proxy = {
   "GET /api/status.json": (req, res) => {
     return res.json({
       pump: true,
+      wifiStatus: "Connected",
+      mqttStatus: "Disabled",
       sensors: {
         lastUpdate: 89452,
         distance: {
@@ -103,12 +105,17 @@ const proxy = {
     return res.json(req.body);
   },
   "GET /api/wifi.json": (req, res) => {
-    return res.json({
-      status: "success",
-      networks: [
-        { ssid: "Foo", rssi: -58, bssid: "18:E8:29:9D:D4:E4", channel: 6, enc: 3 },
-        { ssid: "Bar", rssi: -58, bssid: "22:E8:29:9D:D4:E4", channel: 6, enc: 3 },
-      ],
+    if (Math.random() > 0.3) {
+      return res.json({
+        status: "success",
+        networks: [
+          { ssid: "Foo", rssi: -58, bssid: "18:E8:29:9D:D4:E4", channel: 6, enc: 3 },
+          { ssid: "Bar", rssi: -58, bssid: "22:E8:29:9D:D4:E4", channel: 6, enc: 3 },
+        ],
+      });
+    }
+    return res.status(202).json({
+      status: "inprogress",
     });
   },
   "POST /settings/mqtt.html": (req, res) => {

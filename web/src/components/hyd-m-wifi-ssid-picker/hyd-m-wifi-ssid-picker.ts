@@ -1,10 +1,16 @@
-import { customElement, property, query, state } from "lit/decorators.js";
+import { customElement, query, state } from "lit/decorators.js";
 import { html, LitElement, nothing } from "lit";
 import { apiFetch } from "../../util";
 
+enum WifiApiStatus {
+  INPROGRESS = "inprogress",
+  FAILED = "failed",
+  SUCCESS = "success",
+}
+
 interface WifiApiResponse {
-  status: "inprogress" | "failed" | "success";
-  networks: WifiNetwork[];
+  status: WifiApiStatus;
+  networks?: WifiNetwork[];
 }
 
 interface WifiNetwork {
@@ -20,11 +26,16 @@ interface WifiNetwork {
  */
 @customElement("hyd-m-wifi-ssid-picker")
 export class WifiSsidPicker extends LitElement {
-  @property({ type: Number }) scanLoops = 0;
   @query("#CS")
   input: HTMLInputElement;
   @state()
   private _wifiNetworks: WifiNetwork[] = [];
+
+  @state()
+  private _status: WifiApiStatus;
+
+  @state()
+  private _isLoading = false;
 
   createRenderRoot() {
     return this; // turn off shadow dom to access external styles
@@ -45,7 +56,22 @@ export class WifiSsidPicker extends LitElement {
           type="text"
         />
       </div>
-      <button id="scan" class="btn-primary" @click="${this._loadWifiNetworks}" type="button">Scan</button>
+      <button
+        ?disabled=${this._status === WifiApiStatus.INPROGRESS || this._isLoading}
+        id="scan"
+        class="btn-primary"
+        @click="${this._loadWifiNetworks}"
+        type="button"
+      >
+        Scan
+      </button>
+      ${this._status !== WifiApiStatus.FAILED
+        ? nothing
+        : html`
+            <div role="alert">
+              <div class="bg-red-500 text-white font-bold rounded-t px-4 py-2">Wifi Scan failed, please try again</div>
+            </div>
+          `}
       ${this._wifiNetworks.length === 0
         ? nothing
         : html` <div class="border border-blue-400 rounded-b bg-blue-100 px-4 py-3 text-blue-700">
@@ -60,27 +86,25 @@ export class WifiSsidPicker extends LitElement {
 
   private _loadWifiNetworks() {
     const url = "/api/wifi.json";
-
-    apiFetch<WifiApiResponse>(url)
+    this._wifiNetworks = [];
+    this._isLoading = true;
+    apiFetch<WifiApiResponse>(url, {
+      retries: 10,
+      retryDelay: 1000,
+      retryOn: [202, 500, 503],
+    })
       .then(response => {
-        return (
-          response.networks
-            // unique networks
-            .filter((value, index, array) => array.indexOf(value) === index)
-            // Sort by signal strength.
-            .sort((a, b) => b.rssi - a.rssi)
-        );
+        this._status = response.status;
+        return response.networks
+          ? response.networks
+              // unique networks
+              .filter((value, index, array) => array.indexOf(value) === index)
+              // Sort by signal strength.
+              .sort((a, b) => b.rssi - a.rssi)
+          : [];
       })
       .then(networks => {
-        // If there are no networks, fetch it again in a second.
-        // but only do this a few times.
-        if (networks.length === 0 && this.scanLoops < 10) {
-          this.scanLoops++;
-          setTimeout(this._loadWifiNetworks, 1000);
-          return;
-        }
-        this.scanLoops = 0;
-
+        this._isLoading = false;
         this._wifiNetworks = networks;
       })
       .catch(() => {
