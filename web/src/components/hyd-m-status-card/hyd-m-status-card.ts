@@ -52,17 +52,21 @@ export class StatusCard extends LitElement {
       return;
     }
 
-    return html` <div class="m-4 border rounded">
-      <h3>Status (last update: ${this._statusResponse.sensors.lastUpdate / 1000} s)</h3>
+    return html` <div class="m-4 border rounded p-4">
+      <span>Status (last update: ${this._statusResponse.sensors.lastUpdate / 1000} s)</span>
       <div>Pump: ${this._statusResponse.pump}</div>
       <ul>
-        <li>${this.renderSensor("Distance", this._statusResponse.sensors.distance)}</li>
-        <li>${this.renderSensor("Volume", this._statusResponse.sensors.volume)}</li>
-        <li>${this.renderSensor("Pressure", this._statusResponse.sensors.pressure)}</li>
+        <li>
+          Volume: ${this._statusResponse.sensors.volume.value} ${this._statusResponse.sensors.volume.unit} (Distance:
+          ${this._statusResponse.sensors.distance.value} ${this._statusResponse.sensors.distance.unit})
+        </li>
         <li>${this.renderSensor("Temperature", this._statusResponse.sensors.temperature)}</li>
         <li>${this.renderSensor("Water Temperature", this._statusResponse.sensors.waterTemperature)}</li>
-        <li>${this.renderSensor("PH", this._statusResponse.sensors.ph)}</li>
-        <li>${this.renderSensor("PH Voltage", this._statusResponse.sensors.phVoltage)}</li>
+        <li>${this.renderSensor("Pressure", this._statusResponse.sensors.pressure)}</li>
+        <li>
+          PH: ${this._statusResponse.sensors.ph.value} ${this._statusResponse.sensors.ph.unit}
+          (${this._statusResponse.sensors.phVoltage.value} ${this._statusResponse.sensors.phVoltage.unit})
+        </li>
         <li>${this.renderSensor("TDS", this._statusResponse.sensors.tds)}</li>
       </ul>
     </div>`;

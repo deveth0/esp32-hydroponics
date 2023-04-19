@@ -45,14 +45,7 @@ export class WifiSsidPicker extends LitElement {
           type="text"
         />
       </div>
-      <button
-        id="scan"
-        class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
-        @click="${this._loadWifiNetworks}"
-        type="button"
-      >
-        Scan
-      </button>
+      <button id="scan" class="btn-primary" @click="${this._loadWifiNetworks}" type="button">Scan</button>
       ${this._wifiNetworks.length === 0
         ? nothing
         : html` <div class="border border-blue-400 rounded-b bg-blue-100 px-4 py-3 text-blue-700">

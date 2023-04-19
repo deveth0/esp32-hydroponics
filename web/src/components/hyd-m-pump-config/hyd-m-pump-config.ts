@@ -70,12 +70,7 @@ export class PumpConfig extends LitElement {
         ${this.renderFormInput("< 10 °C", "le10")} ${this.renderFormInput("10 °C - 15 °C", "le15")}
         ${this.renderFormInput("15 °C - 20 °C", "le20")} ${this.renderFormInput("20 °C - 25 °C", "le25")}
         ${this.renderFormInput("> 25 °C", "gt25")}
-        <button
-          class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
-          type="submit"
-        >
-          Save
-        </button>
+        <button class="btn-primary" type="submit">Save</button>
       </form>
     </div>`;
   }

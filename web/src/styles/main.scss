@@ -3,3 +3,12 @@
 @tailwind utilities;
 
 
+@layer components {
+  .link-primary {
+    @apply block w-full hover:text-secondary;
+  }
+
+  .btn-primary {
+    @apply shadow bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded;
+  }
+}
