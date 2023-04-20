@@ -59,25 +59,82 @@ export class StatusCard extends LitElement {
     if (this._statusResponse === undefined) {
       return;
     }
-
+    const fanIcon = this._statusResponse.pump ? "#fan_on" : "#fan_off";
+    let wifiIcon;
+    switch (this._statusResponse.wifiStatus) {
+      case ConnectionStatus.CONNECTED:
+        wifiIcon = "#wifi_on";
+        break;
+      case ConnectionStatus.DISABLED:
+        wifiIcon = "#wifi_off";
+        break;
+      case ConnectionStatus.DISCONNECTED:
+        wifiIcon = "#wifi_bad";
+        break;
+    }
+    let mqttIcon;
+    switch (this._statusResponse.mqttStatus) {
+      case ConnectionStatus.CONNECTED:
+        mqttIcon = "#wifi_on";
+        break;
+      case ConnectionStatus.DISABLED:
+        mqttIcon = "#wifi_off";
+        break;
+      case ConnectionStatus.DISCONNECTED:
+        mqttIcon = "#wifi_bad";
+        break;
+    }
     return html` <div class="m-4 border rounded p-4">
       <span>Status (last update: ${this._statusResponse.sensors.lastUpdate / 1000} s)</span>
-      <div>Pump: ${this._statusResponse.pump}</div>
-      <div>Wifi: ${this._statusResponse.wifiStatus}</div>
-      <div>Mqtt: ${this._statusResponse.mqttStatus}</div>
+      <div class="flex">
+        <svg class="h-6" viewBox="0 96 960 960">
+          <use href="${fanIcon}"></use>
+        </svg>
+        Pump: ${this._statusResponse.pump}
+      </div>
+      <div class="flex">
+        <svg class="h-6" viewBox="0 96 960 960">
+          <use href="${wifiIcon}"></use>
+        </svg>
+        Wifi: ${this._statusResponse.wifiStatus}
+      </div>
+      <div class="flex">
+        <svg class="h-6" viewBox="0 96 960 960">
+          <use href="${mqttIcon}"></use>
+        </svg>
+        Mqtt: ${this._statusResponse.mqttStatus}
+      </div>
       <ul>
-        <li>
+        <li class="flex">
           Volume: ${this._statusResponse.sensors.volume.value} ${this._statusResponse.sensors.volume.unit} (Distance:
           ${this._statusResponse.sensors.distance.value} ${this._statusResponse.sensors.distance.unit})
         </li>
-        <li>${this.renderSensor("Temperature", this._statusResponse.sensors.temperature)}</li>
-        <li>${this.renderSensor("Water Temperature", this._statusResponse.sensors.waterTemperature)}</li>
-        <li>${this.renderSensor("Pressure", this._statusResponse.sensors.pressure)}</li>
-        <li>
+        <li class="flex">
+          <svg class="h-6" viewBox="0 96 960 960">
+            <use href="#thermostat"></use>
+          </svg>
+          ${this.renderSensor("Temperature", this._statusResponse.sensors.temperature)}
+        </li>
+        <li class="flex">
+          <svg class="h-6" viewBox="0 96 960 960">
+            <use href="#thermostat"></use>
+          </svg>
+          ${this.renderSensor("Water Temperature", this._statusResponse.sensors.waterTemperature)}
+        </li>
+        <li class="flex">${this.renderSensor("Pressure", this._statusResponse.sensors.pressure)}</li>
+        <li class="flex">
+          <svg class="h-6" viewBox="0 96 960 960">
+            <use href="#water_ph"></use>
+          </svg>
           PH: ${this._statusResponse.sensors.ph.value} ${this._statusResponse.sensors.ph.unit}
           (${this._statusResponse.sensors.phVoltage.value} ${this._statusResponse.sensors.phVoltage.unit})
         </li>
-        <li>${this.renderSensor("TDS", this._statusResponse.sensors.tds)}</li>
+        <li class="flex">
+          <svg class="h-6" viewBox="0 96 960 960">
+            <use href="#water_tds"></use>
+          </svg>
+          ${this.renderSensor("TDS", this._statusResponse.sensors.tds)}
+        </li>
       </ul>
     </div>`;
   }

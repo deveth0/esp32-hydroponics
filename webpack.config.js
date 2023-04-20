@@ -5,6 +5,7 @@ const CompressionPlugin = require("compression-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const mockerAPI = require("mocker-api");
+const SpriteLoaderPlugin = require("svg-sprite-loader/plugin");
 
 module.exports = function (env, argv) {
   return {
@@ -32,6 +33,18 @@ module.exports = function (env, argv) {
         {
           test: /\.s[ac]ss$/i,
           use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader", "postcss-loader"],
+        },
+        {
+          test: /\.svg$/,
+          use: [
+            {
+              loader: "svg-sprite-loader",
+              options: {
+                extract: true,
+              },
+            },
+            "svgo-loader",
+          ],
         },
       ],
     },
@@ -71,6 +84,7 @@ module.exports = function (env, argv) {
         filename: "[name].css",
         chunkFilename: "[id].css",
       }),
+      new SpriteLoaderPlugin(),
       argv.mode === "production" &&
         new CompressionPlugin({
           include: /\.(js|css)$/,
