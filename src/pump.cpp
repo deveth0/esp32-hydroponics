@@ -7,6 +7,12 @@ PumpHandler::PumpHandler()
 
 void PumpHandler::handlePump()
 {
+
+if(!pumpEnabled){
+  //ensure pump is stopped
+  digitalWrite(PUMP_MOSFET_PIN, LOW);
+}
+
   if (lastTemperature == __FLT_MAX__)
     return;
   // minutes since last run

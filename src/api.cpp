@@ -86,6 +86,8 @@ void handleApiConfigPump(AsyncWebServerRequest *request)
 
   DynamicJsonDocument doc(1024);
 
+  doc["pumpEnabled"] = pumpEnabled;
+
   JsonObject pumpConfig = doc.createNestedObject("pumpConfig");
 
   addPumpConfigEntry(pumpConfig, "le10", pumpLe10Interval, pumpLe10Duration);
@@ -103,6 +105,7 @@ void handleApiConfigPumpPOST(AsyncWebServerRequest *request, JsonVariant &json)
 {
   StaticJsonDocument<512> data = json.as<JsonObject>();
 
+  pumpEnabled = data["pumpEnabled"];
   JsonObject pumpConfig = data["pumpConfig"];
 
   pumpLe10Interval = pumpConfig["le10"]["interval"];
@@ -177,7 +180,7 @@ void handleWiFiNetworkList(AsyncWebServerRequest *request)
   else if (status == WIFI_SCAN_RUNNING)
   {
     doc["status"] = F("inprogress");
-    statusCode = 202
+    statusCode = 202;
   }
   else
   {

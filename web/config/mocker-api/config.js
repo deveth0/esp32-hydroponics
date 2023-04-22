@@ -77,6 +77,7 @@ const proxy = {
   },
   "GET /api/config/pump.json": (req, res) => {
     return res.json({
+      pumpEnabled: true,
       pumpConfig: {
         le10: {
           interval: 300,

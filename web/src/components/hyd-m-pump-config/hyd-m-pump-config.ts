@@ -3,6 +3,7 @@ import { html, LitElement } from "lit";
 import { apiFetch, apiPostJson } from "../../util";
 
 interface ConfigResponse {
+  pumpEnabled: boolean;
   pumpConfig: Record<string, PumpConfigEntry>;
 }
 
@@ -13,6 +14,9 @@ interface PumpConfigEntry {
 
 @customElement("hyd-m-pump-config")
 export class PumpConfig extends LitElement {
+  @state()
+  _pumpEnabled: boolean;
+
   @state()
   _pumpConfig: Record<string, PumpConfigEntry> = {};
 
@@ -31,6 +35,7 @@ export class PumpConfig extends LitElement {
   fetchConfig() {
     apiFetch<ConfigResponse>("/api/config/pump.json")
       .then(response => {
+        this._pumpEnabled = response.pumpEnabled;
         this._pumpConfig = response.pumpConfig;
       })
       .catch(error => {
@@ -44,7 +49,7 @@ export class PumpConfig extends LitElement {
     const formData = new FormData(this.configForm);
 
     // collect data in correct format
-    const submitData = [...formData.entries()].reduce((store: Record<string, Record<string, number>>, word) => {
+    const newPumpConfig = [...formData.entries()].reduce((store: Record<string, Record<string, number>>, word) => {
       const letter = word[0].substring(0, 4);
       const keyStore =
         store[letter] || // Does it exist in the object?
@@ -54,9 +59,13 @@ export class PumpConfig extends LitElement {
       return store;
     }, {});
 
-    apiPostJson<unknown, ConfigResponse>("/api/config/pump.json", { pumpConfig: submitData })
+    apiPostJson<unknown, ConfigResponse>("/api/config/pump.json", {
+      pumpConfig: newPumpConfig,
+      pumpEnabled: this._pumpEnabled,
+    })
       .then(response => {
         this._pumpConfig = response.pumpConfig;
+        this._pumpEnabled = response.pumpEnabled;
       })
       .catch(error => {
         console.error("Error:", error);
@@ -67,6 +76,10 @@ export class PumpConfig extends LitElement {
     return html` <div>
       <h2 class="mb-6 text-lg font-bold text-gray-500">Config</h2>
       <form class="bg-white shadow-md roundex px-8 pt-6 pb-8 mb-4" id="pump-config-form" @submit="${this.handleSubmit}">
+        <div class="mb-4 flex">
+          <label class="block text-grey-700 text-sm font-bold mb-2 mr-10" for="pumpEnabled">Enable Pump</label>
+          <input type="checkbox" value="true" id="pumpEnabled" name="pumpEnabled" />
+        </div>
         ${this.renderFormInput("< 10 °C", "le10")} ${this.renderFormInput("10 °C - 15 °C", "le15")}
         ${this.renderFormInput("15 °C - 20 °C", "le20")} ${this.renderFormInput("20 °C - 25 °C", "le25")}
         ${this.renderFormInput("> 25 °C", "gt25")}

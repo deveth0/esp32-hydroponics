@@ -162,6 +162,7 @@ HYDROPONICS_GLOBAL char mqttClientID[41] _INIT("");                  // override
 HYDROPONICS_GLOBAL uint16_t mqttPort _INIT(1883);
 #define HYDROPONICS_MQTT_CONNECTED (mqtt != nullptr && mqtt->connected())
 
+HYDROPONICS_GLOBAL bool pumpEnabled _INIT(true);
 HYDROPONICS_GLOBAL u_int pumpLe10Interval _INIT(0);
 HYDROPONICS_GLOBAL u_int pumpLe15Interval _INIT(0);
 HYDROPONICS_GLOBAL u_int pumpLe20Interval _INIT(0);
