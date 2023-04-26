@@ -5,7 +5,12 @@ const DELAY_TIME = 500;
 const proxy = {
   "GET /api/status.json": (req, res) => {
     return res.json({
-      pump: true,
+      pump: {
+        status: 200,
+        enabled: true,
+        running: true,
+        runUntil: Date.now() + 1000000,
+      },
       wifiStatus: "Connected",
       mqttStatus: "Disabled",
       sensors: {
@@ -17,6 +22,10 @@ const proxy = {
         volume: {
           unit: "L",
           value: 12,
+        },
+        waterLevel: {
+          unit: "%",
+          value: 66,
         },
         pressure: {
           unit: "Pa",
@@ -61,6 +70,8 @@ const proxy = {
         width: 10.0,
         height: 12.0,
         length: 14.0,
+        minWaterLevel: 10,
+        maxWaterLevelDifference: 5,
       },
       measurement: {
         numberMeasurements: 25,

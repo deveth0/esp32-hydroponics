@@ -14,10 +14,17 @@ public:
   }
 
   void handlePump();
+  long pumpRunUntil = 0;
 
 private:
   long lastPumpRun = 0;
-  long pumpRunUntil = 0;
+  long pumpStartTankLevel = 0;
   long timer;
+
+  void disablePump();
+  /**
+   * Enable pump for x milliseconds
+   */
+  void enablePump(long duration);
 };
 #endif

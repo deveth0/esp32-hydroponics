@@ -75,14 +75,20 @@ export class PumpConfig extends LitElement {
   render() {
     return html` <div>
       <h2 class="mb-6 text-lg font-bold text-gray-500">Config</h2>
-      <form class="bg-white shadow-md roundex px-8 pt-6 pb-8 mb-4" id="pump-config-form" @submit="${this.handleSubmit}">
-        <div class="mb-4 flex">
-          <label class="block text-grey-700 text-sm font-bold mb-2 mr-10" for="pumpEnabled">Enable Pump</label>
-          <input type="checkbox" value="true" id="pumpEnabled" name="pumpEnabled" />
-        </div>
-        ${this.renderFormInput("< 10 °C", "le10")} ${this.renderFormInput("10 °C - 15 °C", "le15")}
-        ${this.renderFormInput("15 °C - 20 °C", "le20")} ${this.renderFormInput("20 °C - 25 °C", "le25")}
-        ${this.renderFormInput("> 25 °C", "gt25")}
+      <form id="pump-config-form" @submit="${this.handleSubmit}">
+        <fieldset class="border border-solid border-gray-300 p-3">
+          <legend class="text-sm">Pump</legend>
+          <div class="mb-4 flex">
+            <label class="block text-grey-700 text-sm font-bold mb-2 mr-10" for="pumpEnabled">Enable Pump</label>
+            <input type="checkbox" checked="${this._pumpEnabled}" id="pumpEnabled" name="pumpEnabled" />
+          </div>
+        </fieldset>
+        <fieldset class="border border-solid border-gray-300 p-3">
+          <legend class="text-sm">Temperature based cycles</legend>
+          ${this.renderFormInput("< 10 °C", "le10")} ${this.renderFormInput("10 °C - 15 °C", "le15")}
+          ${this.renderFormInput("15 °C - 20 °C", "le20")} ${this.renderFormInput("20 °C - 25 °C", "le25")}
+          ${this.renderFormInput("> 25 °C", "gt25")}
+        </fieldset>
         <button class="btn-primary" type="submit">Save</button>
       </form>
     </div>`;

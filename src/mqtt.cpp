@@ -45,6 +45,7 @@ void onMqttConnect(bool sessionPresent)
   _createMqttSensor(F("Temperature"), mqttDeviceTopic, "temperature", "temperature", F("°C"));
   _createMqttSensor(F("Distance"), mqttDeviceTopic, "distance", "distance", F("cm"));
   _createMqttSensor(F("Volume"), mqttDeviceTopic, "volume", "water", F("L"));
+  _createMqttSensor(F("WaterLevel"), mqttDeviceTopic, "waterLevel", "", F("%"));
   _createMqttSensor(F("Pressure"), mqttDeviceTopic, "pressure", "pressure", F("Pa"));
   _createMqttSensor(F("TDS"), mqttDeviceTopic, "tds", "", F("ppm"));
   _createMqttSensor(F("EC"), mqttDeviceTopic, "ec", "", F("uS/cm"));

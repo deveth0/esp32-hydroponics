@@ -8,13 +8,48 @@ PumpHandler::PumpHandler()
 void PumpHandler::handlePump()
 {
 
-if(!pumpEnabled){
-  //ensure pump is stopped
-  digitalWrite(PUMP_MOSFET_PIN, LOW);
-}
+  if (!pumpEnabled)
+  {
+    // ensure pump is stopped
+    digitalWrite(PUMP_MOSFET_PIN, LOW);
+    return;
+  }
+
+  if (pumpRunUntil > 0)
+  {
+    if (pumpRunUntil <= millis())
+    {
+      disablePump();
+      pumpStatus = SCHEDULED_STOP;
+      return;
+    }
+    if (lastDistance == __INT_MAX__ || SensorsHandler::instance().getTankVolume() == 0)
+    {
+      // no clue about the tank, disable pump
+      pumpStatus = UNKNOWN_TANK_VOLUME;
+      disablePump();
+      return;
+    }
+    float fillHeight = tankHeight - lastDistance;
+    if (fillHeight <= pumpStartTankLevel - maxWaterLevelDifferenceCm)
+    {
+      // water level falls to rapidly
+      disablePump();
+      pumpStatus = EMERGENCY_PUMP_STOP;
+      // disable pump until next restart
+      pumpEnabled = false;
+      return;
+    }
+
+    return;
+  }
 
   if (lastTemperature == __FLT_MAX__)
+  {
+    // no temperature available
     return;
+  }
+
   // minutes since last run
   timer = (millis() - lastPumpRun) / 60000;
 
@@ -50,17 +85,37 @@ if(!pumpEnabled){
   if (interval > 0 && timer > interval)
   {
     DEBUG_PRINTF("Last pump run %d minutes ago, starting for %d minutes...\n", timer, duration);
-    lastPumpRun = millis();
-    pumpRunUntil = lastPumpRun + duration * 60000;
-    digitalWrite(PUMP_MOSFET_PIN, HIGH);
-    publishMqtt("pump", "ON");
+    pumpStatus = SCHEDULED_RUN;
+    enablePump(duration * 60000);
+  }
+}
+
+void PumpHandler::disablePump()
+{
+  digitalWrite(PUMP_MOSFET_PIN, LOW);
+  publishMqtt("pump", "OFF");
+  pumpRunUntil = 0;
+}
+
+void PumpHandler::enablePump(long duration)
+{
+  if (lastDistance == __INT_MAX__ || SensorsHandler::instance().getTankVolume() == 0)
+  {
+    // no clue about the tank
+    return;
   }
 
-  if (pumpRunUntil > 0 && pumpRunUntil <= millis())
+  float fillHeight = tankHeight - lastDistance;
+
+  if (fillHeight < minWaterLevelCm)
   {
-    DEBUG_PRINTF("Stopping pump");
-    digitalWrite(PUMP_MOSFET_PIN, LOW);
-    publishMqtt("pump", "OFF");
-    pumpRunUntil = 0;
+    // not enough water
+    return;
   }
+
+  lastPumpRun = millis();
+  pumpRunUntil = lastPumpRun + duration;
+  pumpStartTankLevel = fillHeight;
+  digitalWrite(PUMP_MOSFET_PIN, HIGH);
+  publishMqtt("pump", "ON");
 }

@@ -28,13 +28,31 @@ void SensorsHandler::initSensors()
 {
   dallasTemperature.begin();
   pinMode(PH_PIN, INPUT);
-  pinMode(TDS_PIN, INPUT_PULLDOWN);
+  pinMode(TDS_PIN, INPUT);
   pinMode(PH_MOSFET_PIN, OUTPUT);
   pinMode(TDS_MOSFET_PIN, OUTPUT);
   pinMode(PUMP_MOSFET_PIN, OUTPUT);
 
   pinMode(DISTANCE_PIN_TRIGGER, OUTPUT);
   pinMode(DISTANCE_PIN_ECHO, INPUT);
+}
+
+float SensorsHandler::getTankVolume()
+{
+  if (tankWidth != 0 && tankHeight != 0 && tankLength != 0)
+    return (tankHeight * tankLength * tankWidth) / 1000;
+
+  return 0;
+}
+
+float SensorsHandler::getCurrentTankLevel()
+{
+  if (lastDistance == __INT_MAX__ || tankHeight == 0)
+    return 0;
+
+  float fillHeight = tankHeight - lastDistance;
+
+  return roundf((fillHeight * tankLength * tankWidth) / 1000);
 }
 
 void SensorsHandler::handleSensors()
@@ -108,11 +126,15 @@ void SensorsHandler::handleSensors()
       {
         float fillHeight = tankHeight - lastDistance;
 
-        lastVolume = (fillHeight * tankLength * tankWidth) / 1000;
-        lastVolume = roundf(lastVolume);
+        lastVolume = getCurrentTankLevel();
+
+        float maxVolume = getTankVolume();
+
+        lastWaterLevel = round((100 * lastVolume) / maxVolume);
 
         DEBUG_PRINTF("new volume %d L\n", lastVolume);
         publishMqtt("volume", String(lastVolume).c_str());
+        publishMqtt("waterLevel", String(lastWaterLevel).c_str());
       }
     }
   }

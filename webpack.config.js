@@ -87,7 +87,7 @@ module.exports = function (env, argv) {
       new SpriteLoaderPlugin(),
       argv.mode === "production" &&
         new CompressionPlugin({
-          include: /\.(js|css)$/,
+          include: /\.(js|css|svg)$/,
         }),
     ].filter(n => n),
     optimization: {

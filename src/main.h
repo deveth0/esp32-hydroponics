@@ -163,6 +163,8 @@ HYDROPONICS_GLOBAL uint16_t mqttPort _INIT(1883);
 #define HYDROPONICS_MQTT_CONNECTED (mqtt != nullptr && mqtt->connected())
 
 HYDROPONICS_GLOBAL bool pumpEnabled _INIT(true);
+HYDROPONICS_GLOBAL u_int minWaterLevelCm _INIT(0);           // min water level in cm
+HYDROPONICS_GLOBAL u_int maxWaterLevelDifferenceCm _INIT(0); // max difference between starting to pump to current level before emergency shutdown
 HYDROPONICS_GLOBAL u_int pumpLe10Interval _INIT(0);
 HYDROPONICS_GLOBAL u_int pumpLe15Interval _INIT(0);
 HYDROPONICS_GLOBAL u_int pumpLe20Interval _INIT(0);
@@ -173,6 +175,17 @@ HYDROPONICS_GLOBAL u_int pumpLe15Duration _INIT(0);
 HYDROPONICS_GLOBAL u_int pumpLe20Duration _INIT(0);
 HYDROPONICS_GLOBAL u_int pumpLe25Duration _INIT(0);
 HYDROPONICS_GLOBAL u_int pumpGt25Duration _INIT(0);
+
+enum PumpStatus
+{
+  SCHEDULED_RUN = 200,
+  SCHEDULED_STOP = 201,
+  MANUAL_RUN = 202,
+  UNKNOWN_TANK_VOLUME = 500,
+  EMERGENCY_PUMP_STOP = 501
+};
+
+HYDROPONICS_GLOBAL PumpStatus pumpStatus;
 
 // ui style
 HYDROPONICS_GLOBAL bool showWelcomePage _INIT(false);
@@ -212,7 +225,7 @@ HYDROPONICS_GLOBAL float lastPh _INIT(__FLT_MAX__);
 HYDROPONICS_GLOBAL float lastPhVoltage _INIT(0);
 HYDROPONICS_GLOBAL float lastTds _INIT(__FLT_MAX__);
 HYDROPONICS_GLOBAL float lastTdsVoltage _INIT(0);
-
+HYDROPONICS_GLOBAL float lastWaterLevel _INIT(0);
 HYDROPONICS_GLOBAL long lastDistanceMeasure _INIT(0);
 HYDROPONICS_GLOBAL long lastTemperatureMeasure _INIT(0);
 HYDROPONICS_GLOBAL long lastPhTdsMeasure _INIT(0);

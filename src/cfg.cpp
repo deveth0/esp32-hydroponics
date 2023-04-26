@@ -81,6 +81,7 @@ bool deserializeConfig(JsonObject doc, bool fromFS)
 
   // pump config
   JsonObject pumpConfig = doc[F("pumpConfig")];
+  CJSON(pumpEnabled, pumpConfig["pumpEnabled"]);
 
   JsonObject le10 = pumpConfig[F("le10")];
   CJSON(pumpLe10Interval, le10["interval"]);
@@ -120,6 +121,8 @@ bool deserializeConfig(JsonObject doc, bool fromFS)
   CJSON(tankHeight, tank["height"]);
   CJSON(tankWidth, tank["width"]);
   CJSON(tankLength, tank["length"]);
+  CJSON(minWaterLevelCm, tank["minWaterLevelCm"]);
+  CJSON(maxWaterLevelDifferenceCm, tank["maxWaterLevelDifferenceCm"]);
 
   JsonObject measurementConfig = doc[F("measurement")];
 
@@ -235,6 +238,7 @@ void serializeConfig()
   if_mqtt_topics[F("group")] = mqttGroupTopic;
 
   JsonObject pumpConfig = doc.createNestedObject("pumpConfig");
+  pumpConfig["pumpEnabled"] = pumpEnabled;
 
   JsonObject le10 = pumpConfig.createNestedObject("le10");
   le10["interval"] = pumpLe10Interval;
@@ -271,6 +275,8 @@ void serializeConfig()
   tank["width"] = tankWidth;
   tank["height"] = tankHeight;
   tank["length"] = tankLength;
+  tank["minWaterLevelCm"] = minWaterLevelCm;
+  tank["maxWaterLevelDifferenceCm"] = maxWaterLevelDifferenceCm;
 
   JsonObject measurement = doc.createNestedObject("measurement");
 

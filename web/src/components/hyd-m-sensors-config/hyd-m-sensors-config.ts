@@ -23,6 +23,8 @@ interface SensorsConfigTankResponse {
   width: number;
   height: number;
   length: number;
+  minWaterLevel: number;
+  maxWaterLevelDifference: number;
 }
 
 interface SensorsConfigMeasurementResponse {
@@ -81,8 +83,10 @@ export class SensorsConfig extends LitElement {
         height: formData.get("tankHeight"),
         width: formData.get("tankWidth"),
         length: formData.get("tankLength"),
+        minWaterLevel: formData.get("minWaterLevel"),
+        maxWaterLevelDifference: formData.get("maxWaterLevelDifference"),
       },
-      measure: {
+      measurement: {
         numberMeasurements: formData.get("numberMeasurements"),
         temperatureInterval: formData.get("temperatureInterval"),
         distanceInterval: formData.get("distanceInterval"),
@@ -104,12 +108,9 @@ export class SensorsConfig extends LitElement {
   render() {
     return html` <div>
       <h2 class="mb-6 text-lg font-bold text-gray-500">Config</h2>
-      <form
-        class="bg-white shadow-md roundex px-8 pt-6 pb-8 mb-4"
-        id="sensors-config-form"
-        @submit="${this.handleSubmit}"
-      >
-        <fieldset>
+      <form id="sensors-config-form" @submit="${this.handleSubmit}">
+        <fieldset class="border border-solid border-gray-300 p-3">
+          <legend class="text-sm">PH calibration</legend>
           <label for="phAcidVoltage">PH Acid Voltage (4.0 pH)</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -127,7 +128,8 @@ export class SensorsConfig extends LitElement {
             value="${this._sensorsConfig?.ph.neutralVoltage}"
           />
         </fieldset>
-        <fieldset>
+        <fieldset class="border border-solid border-gray-300 p-3">
+          <legend class="text-sm">Temperature Offsets</legend>
           <label for="temperatureAdjustment">Temperature Adjustment</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -137,8 +139,6 @@ export class SensorsConfig extends LitElement {
             step="0.5"
             value="${this._sensorsConfig?.temperature.adjustment}"
           />
-        </fieldset>
-        <fieldset>
           <label for="waterTemperatureAdjustment">Water Temperature Adjustment</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -149,7 +149,8 @@ export class SensorsConfig extends LitElement {
             value="${this._sensorsConfig?.waterTemperature.adjustment}"
           />
         </fieldset>
-        <fieldset>
+        <fieldset class="border border-solid border-gray-300 p-3">
+          <legend class="text-sm">Tank</legend>
           <label for="tankWidth">Tank Width</label>
           <input
             class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -175,7 +176,30 @@ export class SensorsConfig extends LitElement {
             value="${this._sensorsConfig?.tank.length}"
           />
         </fieldset>
-        <fieldset>
+        <fieldset class="border border-solid border-gray-300 p-3">
+          <legend class="text-sm">Pump Tank Level Configs</legend>
+          <label for="minWaterLevel">Min Water Level (cm)</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="number"
+            id="minWaterLevel"
+            name="minWaterLevel"
+            min="1"
+            value="${this._sensorsConfig?.tank.minWaterLevel}"
+          />
+          <label for="maxWaterLevelDifference">Max difference during pump cycle (cm)</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="number"
+            id="maxWaterLevelDifference"
+            name="maxWaterLevelDifference"
+            min="1"
+            value="${this._sensorsConfig?.tank.maxWaterLevelDifference}"
+          />
+        </fieldset>
+        <fieldset class="border border-solid border-gray-300 p-3">
+          <legend class="text-sm">Measurements</legend>
+
           <label for="numberMeasurements">Number Measurements</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -185,8 +209,6 @@ export class SensorsConfig extends LitElement {
             min="1"
             value="${this._sensorsConfig?.measurement.numberMeasurements}"
           />
-        </fieldset>
-        <fieldset>
           <label for="temperatureInterval">Temperature Interval</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -196,8 +218,6 @@ export class SensorsConfig extends LitElement {
             min="1"
             value="${this._sensorsConfig?.measurement.temperatureInterval}"
           />
-        </fieldset>
-        <fieldset>
           <label for="distanceInterval">Distance interval</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -206,8 +226,6 @@ export class SensorsConfig extends LitElement {
             name="distanceInterval"
             value="${this._sensorsConfig?.measurement.distanceInterval}"
           />
-        </fieldset>
-        <fieldset>
           <label for="phTdsInterval">PH - TDS Interval</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -216,8 +234,6 @@ export class SensorsConfig extends LitElement {
             name="phTdsInterval"
             value="${this._sensorsConfig?.measurement.phTdsInterval}"
           />
-        </fieldset>
-        <fieldset>
           <label for="phOnTime">PH On Time</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -226,8 +242,6 @@ export class SensorsConfig extends LitElement {
             name="phOnTime"
             value="${this._sensorsConfig?.measurement.phOnTime}"
           />
-        </fieldset>
-        <fieldset>
           <label for="tdsOnTime">TDS On Time</label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"

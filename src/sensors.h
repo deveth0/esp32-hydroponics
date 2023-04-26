@@ -16,6 +16,9 @@ public:
   void initSensors();
   void handleSensors();
 
+  float getTankVolume();
+  float getCurrentTankLevel();
+
 private:
   OneWire oneWire;
   DallasTemperature dallasTemperature;

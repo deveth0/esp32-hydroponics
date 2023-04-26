@@ -41,6 +41,7 @@ void initServer()
   server.serveStatic("/settings/backup/cfg.json", HYDROPONICS_FS, "/cfg.json");
   server.serveStatic("/app.js", HYDROPONICS_FS, "/app.js").setCacheControl("max-age=600");
   server.serveStatic("/main.css", HYDROPONICS_FS, "/main.css").setCacheControl("max-age=600");
+  server.serveStatic("/sprite.svg", HYDROPONICS_FS, "/sprite.svg").setCacheControl("max-age=600");
 
   server.on("/settings/s.js", HTTP_GET, [](AsyncWebServerRequest *request)
             {

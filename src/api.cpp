@@ -41,6 +41,9 @@ void handleApiConfigSensors(AsyncWebServerRequest *request)
   sensor["height"] = tankHeight;
   sensor["length"] = tankLength;
 
+  sensor["minWaterLevel"] = minWaterLevelCm;
+  sensor["maxWaterLevelDifference"] = maxWaterLevelDifferenceCm;
+
   sensor = doc.createNestedObject("measurement");
   sensor["numberMeasurements"] = numberMeasurements;
   sensor["temperatureInterval"] = temperatureInterval;
@@ -68,6 +71,8 @@ void handleApiConfigSensorsPOST(AsyncWebServerRequest *request, JsonVariant &jso
   tankWidth = data["tank"]["width"];
   tankHeight = data["tank"]["height"];
   tankLength = data["tank"]["length"];
+  minWaterLevelCm = data["tank"]["minWaterLevel"];
+  maxWaterLevelDifferenceCm = data["tank"]["maxWaterLevelDifference"];
 
   numberMeasurements = data["measurement"]["numberMeasurements"];
   temperatureInterval = data["measurement"]["temperatureInterval"];
@@ -133,8 +138,13 @@ void handleApiStatus(AsyncWebServerRequest *request)
 
   DynamicJsonDocument doc(1024);
 
-  doc["pump"] = digitalRead(PUMP_MOSFET_PIN) == HIGH;
-
+  doc["pump"]["status"] = pumpStatus;
+  doc["pump"]["enabled"] = pumpEnabled;
+  doc["pump"]["running"] = digitalRead(PUMP_MOSFET_PIN) == HIGH;
+  doc["pump"]["runUntil"] = PumpHandler::instance().pumpRunUntil;
+  doc["wifiStatus"] = HYDROPONICS_CONNECTED ? F("Connected") : F("Disconnected");
+  doc["mqttStatus"] = (!mqttEnabled || mqttServer[0] == 0) ? F("Disabled") : HYDROPONICS_MQTT_CONNECTED ? F("Connected")
+                                                                                                        : F("Disconnected");
   JsonObject sensors = doc.createNestedObject("sensors");
   long timer = millis();
 
@@ -144,16 +154,13 @@ void handleApiStatus(AsyncWebServerRequest *request)
 
   addSensorStatus(sensors, F("distance"), F("cm"), lastDistance != __INT_MAX__ ? lastDistance : 0);
   addSensorStatus(sensors, F("volume"), F("L"), lastVolume != __FLT_MAX__ ? lastVolume : 0);
+  addSensorStatus(sensors, F("waterLevel"), F("%"), lastWaterLevel != __INT_MAX__ ? lastWaterLevel : 0);
   addSensorStatus(sensors, F("pressure"), F("Pa"), lastPressure != __FLT_MAX__ ? lastPressure : 0);
   addSensorStatus(sensors, F("temperature"), F("°C"), lastTemperature != __FLT_MAX__ ? lastTemperature : 0);
   addSensorStatus(sensors, F("waterTemperature"), F("°C"), lastWaterTemperature != __FLT_MAX__ ? lastWaterTemperature : 0);
   addSensorStatus(sensors, F("ph"), F("pH"), lastPh != __FLT_MAX__ ? lastPh : 0);
   addSensorStatus(sensors, F("phVoltage"), F("V"), lastPhVoltage);
   addSensorStatus(sensors, F("tds"), F("ppm"), lastTds != __FLT_MAX__ ? lastTds : 0);
-
-  sensors["wifiStatus"] = HYDROPONICS_CONNECTED ? F("Connected") : F("Disconnected");
-  sensors["mqttStatus"] = (!mqttEnabled || mqttServer[0] == 0) ? F("Disabled") : HYDROPONICS_MQTT_CONNECTED ? F("Connected")
-                                                                                                            : F("Disconnected");
 
   String data;
   serializeJson(doc, data);
