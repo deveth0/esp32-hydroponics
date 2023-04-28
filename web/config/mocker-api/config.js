@@ -9,11 +9,18 @@ const proxy = {
         status: 200,
         enabled: true,
         running: true,
-        runUntil: Date.now() + 1000000,
+        runUntil: new Date(Date.now() + 1000000).toISOString(),
       },
-      date: Date.now(),
+      date: new Date().toISOString(),
       wifiStatus: "Connected",
       mqttStatus: "Disabled",
+      ntp: {
+        connected: true,
+        lastSyncTime: 1905,
+        packetSendTime: 1882,
+        sunset: "2023-04-28T18:28:00Z",
+        sunrise: "2023-04-28T03:49:00Z",
+      },
       sensors: {
         lastUpdate: 89452,
         distance: {
@@ -87,6 +94,16 @@ const proxy = {
   "POST /api/config/sensors.json": (req, res) => {
     return res.json(req.body);
   },
+  "GET /api/config/time.json": (req, res) => {
+    return res.json({
+      ntpServer: "0.pool.ntp.org",
+      longitude: 12.34,
+      latitude: 51.32,
+    });
+  },
+  "POST /api/config/time.json": (req, res) => {
+    return res.json(req.body);
+  },
   "GET /api/config/pump.json": (req, res) => {
     return res.json({
       pumpEnabled: true,
@@ -122,7 +139,7 @@ const proxy = {
       status: 200,
       enabled: true,
       running: true,
-      runUntil: Date.now() + req.body.duration,
+      runUntil: new Date(Date.now() + req.body.duration).toISOString(),
     });
   },
   "GET /api/wifi.json": (req, res) => {

@@ -85,6 +85,11 @@ export class PumpConfig extends LitElement {
         </fieldset>
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">Temperature based cycles</legend>
+          <div class="mb-4 grid grid-cols-3">
+            <span>Temperature</span>
+            <span>Interval (minutes)</span>
+            <span>Duration (minutes)</span>
+          </div>
           ${this.renderFormInput("< 10 °C", "le10")} ${this.renderFormInput("10 °C - 15 °C", "le15")}
           ${this.renderFormInput("15 °C - 20 °C", "le20")} ${this.renderFormInput("20 °C - 25 °C", "le25")}
           ${this.renderFormInput("> 25 °C", "gt25")}
@@ -95,8 +100,8 @@ export class PumpConfig extends LitElement {
   }
 
   renderFormInput(label: string, name: string) {
-    return html` <div class="mb-4 flex">
-      <label class="block text-gray-700 text-sm font-bold mb-2 mr-10" for=${name + "Interval"}>${label}</label>
+    return html` <div class="grid grid-cols-3 gap-4">
+      <label class="block text-gray-700 text-sm font-bold mr-10" for=${name + "Interval"}>${label}</label>
       <input
         class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
         id=${name + "Interval"}

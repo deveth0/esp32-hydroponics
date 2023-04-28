@@ -37,6 +37,7 @@ void initServer()
   server.serveStatic("/settings/wifi.html", HYDROPONICS_FS, "/settings/wifi.html");
   server.serveStatic("/settings/sensors.html", HYDROPONICS_FS, "/settings/sensors.html");
   server.serveStatic("/settings/mqtt.html", HYDROPONICS_FS, "/settings/mqtt.html");
+  server.serveStatic("/settings/time.html", HYDROPONICS_FS, "/settings/time.html");
   server.serveStatic("/settings/backup.html", HYDROPONICS_FS, "/settings/backup.html");
   server.serveStatic("/settings/backup/cfg.json", HYDROPONICS_FS, "/cfg.json");
   server.serveStatic("/app.js", HYDROPONICS_FS, "/app.js").setCacheControl("max-age=600");

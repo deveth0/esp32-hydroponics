@@ -14,6 +14,8 @@ void Hydroponics::reset()
 
 void Hydroponics::loop()
 {
+  handleTime();
+
   handleConnection();
   yield();
   SensorsHandler::instance().handleSensors();
@@ -37,6 +39,7 @@ void Hydroponics::loop()
   if (lastMqttReconnectAttempt > millis())
   {
     lastMqttReconnectAttempt = 0;
+    ntpLastSyncTime = 0;
   }
   if (millis() - lastMqttReconnectAttempt > 30000 || lastMqttReconnectAttempt == 0)
   { // lastMqttReconnectAttempt==0 forces immediate broadcast
@@ -44,6 +47,8 @@ void Hydroponics::loop()
     initMqtt();
     yield();
   }
+
+  toki.resetTick();
 }
 
 void Hydroponics::setup()
@@ -84,7 +89,7 @@ void Hydroponics::setup()
 
   if (strcmp(clientSSID, DEFAULT_CLIENT_SSID) == 0)
     showWelcomePage = true;
-    
+
   WiFi.persistent(false);
 
   // fill in unique mdns default
@@ -203,7 +208,7 @@ void Hydroponics::handleConnection()
       if (improvActive > 1)
         sendImprovRPCResponse(0x01);
     }
-    initInterfaces();
+    onWifiConnected();
 
     lastMqttReconnectAttempt = 0; // force immediate update
 
@@ -218,7 +223,7 @@ void Hydroponics::handleConnection()
   }
 }
 
-void Hydroponics::initInterfaces()
+void Hydroponics::onWifiConnected()
 {
 
   // Set up mDNS responder:
@@ -232,6 +237,8 @@ void Hydroponics::initInterfaces()
     DEBUG_PRINTLN(F("mDNS started"));
     MDNS.addService("http", "tcp", 80);
   }
+
+  initNtp();
 
   AsyncElegantOTA.begin(&server);
 
@@ -277,7 +284,7 @@ void Hydroponics::initConnection()
   {
     WiFi.config(staticIP, staticGateway, staticSubnet, IPAddress(1, 1, 1, 1));
   }
-  
+
   lastReconnectAttempt = millis();
 
   DEBUG_PRINTF("clientSSID: %s\n", clientSSID);

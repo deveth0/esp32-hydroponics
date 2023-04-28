@@ -28,14 +28,17 @@
 
 #include <ArduinoJson.h>
 #include <AsyncMqttClient.h>
+#include <TimeLib.h>
 
 #include "dependencies/network/Network.h"
+#include "dependencies/toki/Toki.h"
 
 #include <ESPAsyncWebServer.h>
 #include <WiFiUdp.h>
 #include <DNSServer.h>
 
 #include "const.h"
+#include "math.h"
 #include "util.h"
 #include "improv.h"
 #include "cfg.h"
@@ -46,6 +49,7 @@
 #include "api.h"
 #include "sensors.h"
 #include "pump.h"
+#include "ntp.h"
 
 #ifndef CLIENT_SSID
 #define CLIENT_SSID DEFAULT_CLIENT_SSID
@@ -109,6 +113,8 @@ HYDROPONICS_GLOBAL uint32_t lastReconnectAttempt _INIT(0);
 HYDROPONICS_GLOBAL bool interfacesInited _INIT(false);
 HYDROPONICS_GLOBAL bool wasConnected _INIT(false);
 
+HYDROPONICS_GLOBAL char ntpServerName[33] _INIT("0.pool.ntp.org");
+
 // WiFi CONFIG (all these can be changed via web UI, no need to set them here)
 HYDROPONICS_GLOBAL char clientSSID[33] _INIT(CLIENT_SSID);
 HYDROPONICS_GLOBAL char clientPass[65] _INIT(CLIENT_PASS);
@@ -123,6 +129,25 @@ HYDROPONICS_GLOBAL IPAddress staticSubnet _INIT_N(((255, 255, 255, 0))); // most
 
 // dns server
 HYDROPONICS_GLOBAL DNSServer dnsServer;
+
+// network time
+HYDROPONICS_GLOBAL bool ntpConnected _INIT(false);
+HYDROPONICS_GLOBAL time_t localTime _INIT(0);
+HYDROPONICS_GLOBAL unsigned long ntpLastSyncTime _INIT(999000000L);
+HYDROPONICS_GLOBAL unsigned long ntpPacketSentTime _INIT(999000000L);
+HYDROPONICS_GLOBAL IPAddress ntpServerIP;
+HYDROPONICS_GLOBAL uint16_t ntpLocalPort _INIT(2390);
+HYDROPONICS_GLOBAL uint16_t rolloverMillis _INIT(0);
+HYDROPONICS_GLOBAL float longitude _INIT(0.0);
+HYDROPONICS_GLOBAL float latitude _INIT(0.0);
+HYDROPONICS_GLOBAL time_t sunrise _INIT(0);
+HYDROPONICS_GLOBAL time_t sunset _INIT(0);
+HYDROPONICS_GLOBAL Toki toki _INIT(Toki());
+
+HYDROPONICS_GLOBAL WiFiUDP ntpUdp;
+
+// timer
+HYDROPONICS_GLOBAL byte lastTimerMinute _INIT(0);
 
 // Temp buffer
 HYDROPONICS_GLOBAL char *obuf;
@@ -296,6 +321,6 @@ public:
 
   void initAP(bool resetAP = false);
   void initConnection();
-  void initInterfaces();
+  void onWifiConnected();
 };
 #endif // MAIN_H
