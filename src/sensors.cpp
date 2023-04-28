@@ -101,7 +101,7 @@ void SensorsHandler::handleSensors()
     }
   }
 
-  if (timer - lastDistanceMeasure >= distanceInterval * 1000)
+  if (timer - lastDistanceMeasure >= distanceInterval * 1000 || PumpHandler::instance().pumpRunning())
   {
     lastDistanceMeasure = timer;
 

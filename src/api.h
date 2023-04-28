@@ -8,6 +8,7 @@ void initApi();
  * Return json with the current status
  */
 void handleApiStatus(AsyncWebServerRequest *request);
+void handleApiPumpPOST(AsyncWebServerRequest *request, JsonVariant &json);
 
 /**
  * Read / write sensors config

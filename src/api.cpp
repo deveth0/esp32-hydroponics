@@ -7,6 +7,9 @@ void initApi()
   server.on("/api/status.json", HTTP_GET, [](AsyncWebServerRequest *request)
             { handleApiStatus(request); });
 
+  server.addHandler(new AsyncCallbackJsonWebHandler("/api/pump.json", [](AsyncWebServerRequest *request, JsonVariant &json)
+                                                    { handleApiPumpPOST(request, json); }));
+
   server.on("/api/config/sensors.json", HTTP_GET, [](AsyncWebServerRequest *request)
             { handleApiConfigSensors(request); });
   server.addHandler(new AsyncCallbackJsonWebHandler("/api/config/sensors.json", [](AsyncWebServerRequest *request, JsonVariant &json)
@@ -86,6 +89,26 @@ void handleApiConfigSensorsPOST(AsyncWebServerRequest *request, JsonVariant &jso
   handleApiConfigSensors(request);
 }
 
+void handleApiPumpPOST(AsyncWebServerRequest *request, JsonVariant &json)
+{
+  StaticJsonDocument<512> submitData = json.as<JsonObject>();
+
+  int duration = submitData["duration"];
+
+  PumpHandler::instance().manualPumpRun(duration);
+
+  DynamicJsonDocument doc(512);
+
+  doc["status"] = pumpStatus;
+  doc["enabled"] = pumpEnabled;
+  doc["running"] = PumpHandler::instance().pumpRunning();
+  doc["runUntil"] = PumpHandler::instance().pumpRunUntil;
+
+  String data;
+  serializeJson(doc, data);
+  request->send(200, "application/json", data);
+}
+
 void handleApiConfigPump(AsyncWebServerRequest *request)
 {
 
@@ -140,14 +163,15 @@ void handleApiStatus(AsyncWebServerRequest *request)
 
   doc["pump"]["status"] = pumpStatus;
   doc["pump"]["enabled"] = pumpEnabled;
-  doc["pump"]["running"] = digitalRead(PUMP_MOSFET_PIN) == HIGH;
+  doc["pump"]["running"] = PumpHandler::instance().pumpRunning();
   doc["pump"]["runUntil"] = PumpHandler::instance().pumpRunUntil;
   doc["wifiStatus"] = HYDROPONICS_CONNECTED ? F("Connected") : F("Disconnected");
   doc["mqttStatus"] = (!mqttEnabled || mqttServer[0] == 0) ? F("Disabled") : HYDROPONICS_MQTT_CONNECTED ? F("Connected")
                                                                                                         : F("Disconnected");
-  JsonObject sensors = doc.createNestedObject("sensors");
   long timer = millis();
+  doc["date"] = timer;
 
+  JsonObject sensors = doc.createNestedObject("sensors");
   long lastUpdate = timer - min({lastDistanceMeasure, lastTemperatureMeasure, lastPhTdsMeasure});
 
   sensors["lastUpdate"] = lastUpdate;

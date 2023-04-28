@@ -1,0 +1,46 @@
+export interface Sensor {
+  unit: string;
+  value: number;
+}
+
+export enum ConnectionStatus {
+  CONNECTED = "Connected",
+  DISCONNECTED = "Disconnected",
+  DISABLED = "Disabled",
+}
+
+export enum PumpStatus {
+  UNKNOWN = 0,
+  SCHEDULED_RUN = 200,
+  SCHEDULED_STOP = 201,
+  MANUAL_RUN = 202,
+  UNKNOWN_TANK_VOLUME = 500,
+  EMERGENCY_PUMP_STOP = 501,
+  NOT_ENOUGH_WATER_STOP = 502,
+}
+
+export interface PumpStatusResponse {
+  status: PumpStatus;
+  enabled: boolean;
+  running: boolean;
+  runUntil: number;
+}
+
+export interface StatusResponse {
+  date: number;
+  pump: PumpStatusResponse;
+  wifiStatus: ConnectionStatus;
+  mqttStatus: ConnectionStatus;
+  sensors: {
+    lastUpdate: number;
+    distance: Sensor;
+    waterLevel: Sensor;
+    pressure: Sensor;
+    temperature: Sensor;
+    waterTemperature: Sensor;
+    ph: Sensor;
+    phVoltage: Sensor;
+    tds: Sensor;
+    volume: Sensor;
+  };
+}

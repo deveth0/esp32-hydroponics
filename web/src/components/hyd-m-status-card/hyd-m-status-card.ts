@@ -1,48 +1,7 @@
 import { customElement, state } from "lit/decorators.js";
 import { html, LitElement, nothing, TemplateResult } from "lit";
 import { apiFetch } from "../../util";
-
-interface Sensor {
-  unit: string;
-  value: number;
-}
-
-enum ConnectionStatus {
-  CONNECTED = "Connected",
-  DISCONNECTED = "Disconnected",
-  DISABLED = "Disabled",
-}
-
-enum PumpStatus {
-  UNKNOWN = 0,
-  SCHEDULED_RUN = 200,
-  SCHEDULED_STOP = 201,
-  MANUAL_RUN = 202,
-  UNKNOWN_TANK_VOLUME = 500,
-  EMERGENCY_PUMP_STOP = 501,
-}
-interface StatusResponse {
-  pump: {
-    status: PumpStatus;
-    enabled: boolean;
-    running: boolean;
-    runUntil: number;
-  };
-  wifiStatus: ConnectionStatus;
-  mqttStatus: ConnectionStatus;
-  sensors: {
-    lastUpdate: number;
-    distance: Sensor;
-    waterLevel: Sensor;
-    pressure: Sensor;
-    temperature: Sensor;
-    waterTemperature: Sensor;
-    ph: Sensor;
-    phVoltage: Sensor;
-    tds: Sensor;
-    volume: Sensor;
-  };
-}
+import { ConnectionStatus, PumpStatus, Sensor, StatusResponse } from "../../data/StatusResponse";
 
 @customElement("hyd-m-status-card")
 export class StatusCard extends LitElement {
@@ -93,6 +52,7 @@ export class StatusCard extends LitElement {
         >Status (last update: ${this._statusResponse.sensors.lastUpdate / 1000} s)
         ${PumpStatus[this._statusResponse.pump.status]}</span
       >
+      <span>Date: ${new Date(this._statusResponse.date).toString()}</span>
       <div class="flex">
         <svg class="h-6 mr-4" viewBox="0 96 960 960">
           <use href="${fanIcon}"></use>
@@ -141,7 +101,7 @@ export class StatusCard extends LitElement {
   }
 
   private renderListEntry(icon: string, content: TemplateResult) {
-    return html`<li class="flex">
+    return html` <li class="flex">
       <svg class="h-6 mr-4" viewBox="0 96 960 960">
         <use href="${icon}"></use>
       </svg>

@@ -11,6 +11,7 @@ const proxy = {
         running: true,
         runUntil: Date.now() + 1000000,
       },
+      date: Date.now(),
       wifiStatus: "Connected",
       mqttStatus: "Disabled",
       sensors: {
@@ -115,6 +116,14 @@ const proxy = {
   },
   "POST /api/config/pump.json": (req, res) => {
     return res.json(req.body);
+  },
+  "POST /api/pump.json": (req, res) => {
+    return res.json({
+      status: 200,
+      enabled: true,
+      running: true,
+      runUntil: Date.now() + req.body.duration,
+    });
   },
   "GET /api/wifi.json": (req, res) => {
     if (Math.random() > 0.3) {
