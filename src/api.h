@@ -12,15 +12,21 @@ void handleApiPumpPOST(AsyncWebServerRequest *request, JsonVariant &json);
 
 /**
  * Read / write sensors config
-*/
+ */
 void handleApiConfigSensors(AsyncWebServerRequest *request);
 void handleApiConfigSensorsPOST(AsyncWebServerRequest *request, JsonVariant &json);
 
 /**
  * Read / write pump config
-*/
+ */
 void handleApiConfigPump(AsyncWebServerRequest *request);
 void handleApiConfigPumpPOST(AsyncWebServerRequest *request, JsonVariant &json);
+
+/**
+ * Read / write time config
+ */
+void handleApiConfigTime(AsyncWebServerRequest *request);
+void handleApiConfigTimePOST(AsyncWebServerRequest *request, JsonVariant &json);
 
 void handleWiFiNetworkList(AsyncWebServerRequest *request);
 

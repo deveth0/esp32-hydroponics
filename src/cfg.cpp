@@ -79,6 +79,12 @@ bool deserializeConfig(JsonObject doc, bool fromFS)
   getStringFromJson(mqttDeviceTopic, if_mqtt[F("topics")][F("device")], 33);
   getStringFromJson(mqttGroupTopic, if_mqtt[F("topics")][F("group")], 33);
 
+  JsonObject ntp = doc["ntp"];
+  getStringFromJson(ntpServerName, ntp[F("ntpServer")], 33);
+  CJSON(currentTimezone, ntp["timezone"]);
+  CJSON(longitude, ntp["longitude"]);
+  CJSON(latitude, ntp["latitude"]);
+
   // pump config
   JsonObject pumpConfig = doc[F("pumpConfig")];
   CJSON(pumpEnabled, pumpConfig["pumpEnabled"]);
@@ -236,6 +242,12 @@ void serializeConfig()
   JsonObject if_mqtt_topics = if_mqtt.createNestedObject(F("topics"));
   if_mqtt_topics[F("device")] = mqttDeviceTopic;
   if_mqtt_topics[F("group")] = mqttGroupTopic;
+
+  JsonObject ntp = doc.createNestedObject("ntp");
+  ntp[F("ntpServer")] = ntpServerName;
+  ntp[F("timezone")] = currentTimezone;
+  ntp[F("longitude")] = longitude;
+  ntp[F("latitude")] = latitude;
 
   JsonObject pumpConfig = doc.createNestedObject("pumpConfig");
   pumpConfig["pumpEnabled"] = pumpEnabled;

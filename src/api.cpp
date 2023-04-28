@@ -21,6 +21,11 @@ void initApi()
   server.addHandler(new AsyncCallbackJsonWebHandler("/api/config/pump.json", [](AsyncWebServerRequest *request, JsonVariant &json)
                                                     { handleApiConfigPumpPOST(request, json); }));
 
+  server.on("/api/config/time.json", HTTP_GET, [](AsyncWebServerRequest *request)
+            { handleApiConfigTime(request); });
+  server.addHandler(new AsyncCallbackJsonWebHandler("/api/config/time.json", [](AsyncWebServerRequest *request, JsonVariant &json)
+                                                    { handleApiConfigTimePOST(request, json); }));
+
   server.on("/api/wifi.json", HTTP_GET, [](AsyncWebServerRequest *request)
             { handleWiFiNetworkList(request); });
 }
@@ -168,10 +173,24 @@ void handleApiStatus(AsyncWebServerRequest *request)
   doc["wifiStatus"] = HYDROPONICS_CONNECTED ? F("Connected") : F("Disconnected");
   doc["mqttStatus"] = (!mqttEnabled || mqttServer[0] == 0) ? F("Disabled") : HYDROPONICS_MQTT_CONNECTED ? F("Connected")
                                                                                                         : F("Disconnected");
-  long timer = millis();
-  doc["date"] = timer;
+
+  char timeString[sizeof "yyyy-mm-ddThh:mm:ssZ"];
+  getTimeString(timeString, sizeof(timeString));
+  doc["date"] = timeString;
+
+  JsonObject ntp = doc.createNestedObject("ntp");
+  ntp["connected"] = ntpConnected;
+  ntp["lastSyncTime"] = ntpLastSyncTime;
+  ntp["packetSendTime"] = ntpPacketSentTime;
+  getTimeString(sunset, timeString, sizeof(timeString));
+  ntp["sunset"] = timeString;
+
+  getTimeString(sunrise, timeString, sizeof(timeString));
+  ntp["sunrise"] = timeString;
 
   JsonObject sensors = doc.createNestedObject("sensors");
+
+  long timer = millis();
   long lastUpdate = timer - min({lastDistanceMeasure, lastTemperatureMeasure, lastPhTdsMeasure});
 
   sensors["lastUpdate"] = lastUpdate;
@@ -234,6 +253,38 @@ void handleWiFiNetworkList(AsyncWebServerRequest *request)
   String data;
   serializeJson(doc, data);
   request->send(statusCode, "application/json", data);
+}
+
+void handleApiConfigTime(AsyncWebServerRequest *request)
+{
+  DynamicJsonDocument doc(1024);
+
+  doc["ntpServer"] = ntpServerName;
+  doc["timezone"] = currentTimezone;
+  doc["longitude"] = longitude;
+  doc["latitude"] = latitude;
+
+  String data;
+  serializeJson(doc, data);
+  request->send(200, "application/json", data);
+}
+
+void handleApiConfigTimePOST(AsyncWebServerRequest *request, JsonVariant &json)
+{
+  StaticJsonDocument<512> data = json.as<JsonObject>();
+
+  strlcpy(ntpServerName, data["ntpServer"], 33);
+
+  currentTimezone = data["timezone"];
+  longitude = data["longitude"];
+  latitude = data["latitude"];
+
+  doSerializeConfig = true;
+
+  ntpLastSyncTime = 0; // force new NTP query
+  calculateSunriseAndSunset();
+
+  handleApiConfigTime(request);
 }
 
 template <class T>

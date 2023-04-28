@@ -6,6 +6,8 @@
 #define DEFAULT_AP_SSID "HYDROPONICS-AP"
 #define DEFAULT_AP_PASS "hydro1234"
 
+#define NTP_PACKET_SIZE 48
+
 #define DISTANCE_MAX 50 // max distance in cm
 
 #define BMP280_ADDRESS 0x76

@@ -77,6 +77,10 @@ module.exports = function (env, argv) {
         filename: "settings/mqtt.html",
       }),
       new HtmlWebpackPlugin({
+        template: "./web/pages/settings/time.html",
+        filename: "settings/time.html",
+      }),
+      new HtmlWebpackPlugin({
         template: "./web/pages/settings/backup.html",
         filename: "settings/backup.html",
       }),
