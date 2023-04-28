@@ -6,35 +6,6 @@
 // #define WLED_DEBUG_NTP
 #define NTP_SYNC_INTERVAL 42000UL // Get fresh NTP time about twice per day
 
-Timezone *tz;
-
-#define TZ_UTC 0
-#define TZ_UK 1
-#define TZ_EUROPE_CENTRAL 2
-#define TZ_EUROPE_EASTERN 3
-#define TZ_US_EASTERN 4
-#define TZ_US_CENTRAL 5
-#define TZ_US_MOUNTAIN 6
-#define TZ_US_ARIZONA 7
-#define TZ_US_PACIFIC 8
-#define TZ_CHINA 9
-#define TZ_JAPAN 10
-#define TZ_AUSTRALIA_EASTERN 11
-#define TZ_NEW_ZEALAND 12
-#define TZ_NORTH_KOREA 13
-#define TZ_INDIA 14
-#define TZ_SASKACHEWAN 15
-#define TZ_AUSTRALIA_NORTHERN 16
-#define TZ_AUSTRALIA_SOUTHERN 17
-#define TZ_HAWAII 18
-#define TZ_NOVOSIBIRSK 19
-#define TZ_ANCHORAGE 20
-#define TZ_MX_CENTRAL 21
-#define TZ_PAKISTAN 22
-#define TZ_INIT 255
-
-byte tzCurrent = TZ_INIT; // uninitialized
-
 void initNtp()
 {
   ntpConnected = ntpUdp.begin(ntpLocalPort);
@@ -111,153 +82,6 @@ bool checkNTPResponse()
   return true;
 }
 
-void updateTimezone()
-{
-  delete tz;
-  TimeChangeRule tcrDaylight = {Last, Sun, Mar, 1, 0}; // UTC
-  TimeChangeRule tcrStandard = tcrDaylight;            // UTC
-
-  switch (currentTimezone)
-  {
-  case TZ_UK:
-  {
-    tcrDaylight = {Last, Sun, Mar, 1, 60}; // British Summer Time
-    tcrStandard = {Last, Sun, Oct, 2, 0};  // Standard Time
-    break;
-  }
-  case TZ_EUROPE_CENTRAL:
-  {
-    tcrDaylight = {Last, Sun, Mar, 2, 120}; // Central European Summer Time
-    tcrStandard = {Last, Sun, Oct, 3, 60};  // Central European Standard Time
-    break;
-  }
-  case TZ_EUROPE_EASTERN:
-  {
-    tcrDaylight = {Last, Sun, Mar, 3, 180}; // East European Summer Time
-    tcrStandard = {Last, Sun, Oct, 4, 120}; // East European Standard Time
-    break;
-  }
-  case TZ_US_EASTERN:
-  {
-    tcrDaylight = {Second, Sun, Mar, 2, -240}; // EDT = UTC - 4 hours
-    tcrStandard = {First, Sun, Nov, 2, -300};  // EST = UTC - 5 hours
-    break;
-  }
-  case TZ_US_CENTRAL:
-  {
-    tcrDaylight = {Second, Sun, Mar, 2, -300}; // CDT = UTC - 5 hours
-    tcrStandard = {First, Sun, Nov, 2, -360};  // CST = UTC - 6 hours
-    break;
-  }
-  case TZ_US_MOUNTAIN:
-  {
-    tcrDaylight = {Second, Sun, Mar, 2, -360}; // MDT = UTC - 6 hours
-    tcrStandard = {First, Sun, Nov, 2, -420};  // MST = UTC - 7 hours
-    break;
-  }
-  case TZ_US_ARIZONA:
-  {
-    tcrDaylight = {First, Sun, Nov, 2, -420}; // MST = UTC - 7 hours
-    tcrStandard = {First, Sun, Nov, 2, -420}; // MST = UTC - 7 hours
-    break;
-  }
-  case TZ_US_PACIFIC:
-  {
-    tcrDaylight = {Second, Sun, Mar, 2, -420}; // PDT = UTC - 7 hours
-    tcrStandard = {First, Sun, Nov, 2, -480};  // PST = UTC - 8 hours
-    break;
-  }
-  case TZ_CHINA:
-  {
-    tcrDaylight = {Last, Sun, Mar, 1, 480}; // CST = UTC + 8 hours
-    tcrStandard = tcrDaylight;
-    break;
-  }
-  case TZ_JAPAN:
-  {
-    tcrDaylight = {Last, Sun, Mar, 1, 540}; // JST = UTC + 9 hours
-    tcrStandard = tcrDaylight;
-    break;
-  }
-  case TZ_AUSTRALIA_EASTERN:
-  {
-    tcrDaylight = {First, Sun, Oct, 2, 660}; // AEDT = UTC + 11 hours
-    tcrStandard = {First, Sun, Apr, 3, 600}; // AEST = UTC + 10 hours
-    break;
-  }
-  case TZ_NEW_ZEALAND:
-  {
-    tcrDaylight = {Last, Sun, Sep, 2, 780};  // NZDT = UTC + 13 hours
-    tcrStandard = {First, Sun, Apr, 3, 720}; // NZST = UTC + 12 hours
-    break;
-  }
-  case TZ_NORTH_KOREA:
-  {
-    tcrDaylight = {Last, Sun, Mar, 1, 510}; // Pyongyang Time = UTC + 8.5 hours
-    tcrStandard = tcrDaylight;
-    break;
-  }
-  case TZ_INDIA:
-  {
-    tcrDaylight = {Last, Sun, Mar, 1, 330}; // India Standard Time = UTC + 5.5 hours
-    tcrStandard = tcrDaylight;
-    break;
-  }
-  case TZ_SASKACHEWAN:
-  {
-    tcrDaylight = {First, Sun, Nov, 2, -360}; // CST = UTC - 6 hours
-    tcrStandard = tcrDaylight;
-    break;
-  }
-  case TZ_AUSTRALIA_NORTHERN:
-  {
-    tcrDaylight = {First, Sun, Apr, 3, 570}; // ACST = UTC + 9.5 hours
-    tcrStandard = tcrDaylight;
-    break;
-  }
-  case TZ_AUSTRALIA_SOUTHERN:
-  {
-    tcrDaylight = {First, Sun, Oct, 2, 630}; // ACDT = UTC + 10.5 hours
-    tcrStandard = {First, Sun, Apr, 3, 570}; // ACST = UTC + 9.5 hours
-    break;
-  }
-  case TZ_HAWAII:
-  {
-    tcrDaylight = {Last, Sun, Mar, 1, -600}; // HST =  UTC - 10 hours
-    tcrStandard = tcrDaylight;
-    break;
-  }
-  case TZ_NOVOSIBIRSK:
-  {
-    tcrDaylight = {Last, Sun, Mar, 1, 420}; // CST = UTC + 7 hours
-    tcrStandard = tcrDaylight;
-    break;
-  }
-  case TZ_ANCHORAGE:
-  {
-    tcrDaylight = {Second, Sun, Mar, 2, -480}; // AKDT = UTC - 8 hours
-    tcrStandard = {First, Sun, Nov, 2, -540};  // AKST = UTC - 9 hours
-    break;
-  }
-  case TZ_MX_CENTRAL:
-  {
-    tcrDaylight = {First, Sun, Apr, 2, -360}; // CST = UTC - 6 hours
-    tcrStandard = tcrDaylight;
-    break;
-  }
-  case TZ_PAKISTAN:
-  {
-    tcrDaylight = {Last, Sun, Mar, 1, 300}; // Pakistan Standard Time = UTC + 5 hours
-    tcrStandard = tcrDaylight;
-    break;
-  }
-  }
-
-  tzCurrent = currentTimezone;
-
-  tz = new Timezone(tcrDaylight, tcrStandard);
-}
-
 void handleTime()
 {
   handleNetworkTime();
@@ -289,10 +113,8 @@ void handleNetworkTime()
 
 void updateLocalTime()
 {
-  if (currentTimezone != tzCurrent)
-    updateTimezone();
   unsigned long tmc = toki.second();
-  localTime = tmc; //tz->toLocal(tmc);
+  localTime = tmc; // tz->toLocal(tmc);
 }
 
 void checkTimers()

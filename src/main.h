@@ -28,9 +28,9 @@
 
 #include <ArduinoJson.h>
 #include <AsyncMqttClient.h>
+#include <TimeLib.h>
 
 #include "dependencies/network/Network.h"
-#include "dependencies/timezone/Timezone.h"
 #include "dependencies/toki/Toki.h"
 
 #include <ESPAsyncWebServer.h>
@@ -143,7 +143,6 @@ HYDROPONICS_GLOBAL float latitude _INIT(0.0);
 HYDROPONICS_GLOBAL time_t sunrise _INIT(0);
 HYDROPONICS_GLOBAL time_t sunset _INIT(0);
 HYDROPONICS_GLOBAL Toki toki _INIT(Toki());
-HYDROPONICS_GLOBAL byte currentTimezone _INIT(0); // Timezone ID. Refer to timezones array in ntp.cpp
 
 HYDROPONICS_GLOBAL WiFiUDP ntpUdp;
 

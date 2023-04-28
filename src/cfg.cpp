@@ -81,7 +81,6 @@ bool deserializeConfig(JsonObject doc, bool fromFS)
 
   JsonObject ntp = doc["ntp"];
   getStringFromJson(ntpServerName, ntp[F("ntpServer")], 33);
-  CJSON(currentTimezone, ntp["timezone"]);
   CJSON(longitude, ntp["longitude"]);
   CJSON(latitude, ntp["latitude"]);
 
@@ -245,7 +244,6 @@ void serializeConfig()
 
   JsonObject ntp = doc.createNestedObject("ntp");
   ntp[F("ntpServer")] = ntpServerName;
-  ntp[F("timezone")] = currentTimezone;
   ntp[F("longitude")] = longitude;
   ntp[F("latitude")] = latitude;
 

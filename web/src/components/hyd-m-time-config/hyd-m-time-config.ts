@@ -71,14 +71,6 @@ export class TimeConfig extends LitElement {
             name="ntpServer"
             value="${this._timeConfig?.ntpServer}"
           />
-          <label for="timezone">Timezone</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="timezone"
-            name="timezone"
-            value="${this._timeConfig?.timezone}"
-          />
         </fieldset>
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">Location</legend>

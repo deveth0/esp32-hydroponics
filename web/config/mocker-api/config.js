@@ -97,7 +97,6 @@ const proxy = {
   "GET /api/config/time.json": (req, res) => {
     return res.json({
       ntpServer: "0.pool.ntp.org",
-      timezone: 0,
       longitude: 12.34,
       latitude: 51.32,
     });

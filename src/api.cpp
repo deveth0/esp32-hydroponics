@@ -260,7 +260,6 @@ void handleApiConfigTime(AsyncWebServerRequest *request)
   DynamicJsonDocument doc(1024);
 
   doc["ntpServer"] = ntpServerName;
-  doc["timezone"] = currentTimezone;
   doc["longitude"] = longitude;
   doc["latitude"] = latitude;
 
@@ -275,7 +274,6 @@ void handleApiConfigTimePOST(AsyncWebServerRequest *request, JsonVariant &json)
 
   strlcpy(ntpServerName, data["ntpServer"], 33);
 
-  currentTimezone = data["timezone"];
   longitude = data["longitude"];
   latitude = data["latitude"];
 
