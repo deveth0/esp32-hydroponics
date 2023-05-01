@@ -16,11 +16,14 @@ public:
   void handlePump();
   void manualPumpRun(int duration);
   bool pumpRunning();
+  int pumpStartTankLevel();
+  int pumpEndTankLevel();
   long pumpRunUntil = 0;
 
 private:
   long lastPumpRun = 0;
-  long pumpStartTankLevel = 0;
+  int _pumpStartTankLevel = 0;
+  int _pumpEndTankLevel = 0;
   long timer;
   bool _pumpRunning = false;
 

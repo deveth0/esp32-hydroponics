@@ -88,7 +88,7 @@ export class PumpConfig extends LitElement {
           <div class="mb-4 grid grid-cols-3">
             <span>Temperature</span>
             <span>Interval (minutes)</span>
-            <span>Duration (minutes)</span>
+            <span>Duration (seconds)</span>
           </div>
           ${this.renderFormInput("< 10 °C", "le10")} ${this.renderFormInput("10 °C - 15 °C", "le15")}
           ${this.renderFormInput("15 °C - 20 °C", "le20")} ${this.renderFormInput("20 °C - 25 °C", "le25")}
@@ -119,10 +119,10 @@ export class PumpConfig extends LitElement {
         name=${name + "Duration"}
         required
         min="0"
-        max="60"
+        max="360"
         value="${this._pumpConfig[name]?.duration}"
         type="number"
-        placeholder="Minutes"
+        placeholder="Seconds"
       />
     </div>`;
   }

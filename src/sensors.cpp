@@ -193,10 +193,12 @@ void SensorsHandler::handleSensors()
         if (tdsValue != lastTds)
         {
           DEBUG_PRINTF("new tds %f ppm\n", tdsValue);
+          lastTds = tdsValue;
+          lastEc = tdsValue * 2;
           publishMqtt("tds", String(tdsValue, 2).c_str());
           publishMqtt("tdsVoltage", String(lastTdsVoltage, 2).c_str());
-          publishMqtt("ec", String(tdsValue * 2, 2).c_str());
-          lastTds = tdsValue;
+          publishMqtt("ec", String(lastEc * 2, 2).c_str());
+          
         }
         phMeasure = true;
         digitalWrite(TDS_MOSFET_PIN, LOW);
@@ -229,6 +231,6 @@ float SensorsHandler::readTDSValue()
   float compensationVolatge = lastTdsVoltage / compensationCoefficient;                                                                                                                  // temperature compensation
   float tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge - 255.86 * compensationVolatge * compensationVolatge + 857.39 * compensationVolatge) * 0.5; // convert voltage value to tds value
 
-  tdsValue = roundf(tdsValue / 100) * 100;
+  tdsValue = roundf(tdsValue / 50) * 50;
   return tdsValue;
 }

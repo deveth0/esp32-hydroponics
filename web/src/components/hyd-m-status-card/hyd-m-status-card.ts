@@ -48,11 +48,27 @@ export class StatusCard extends LitElement {
         : nothing;
 
     return html` <div class="m-4 border rounded p-4">
-      <span
-        >Status (last update: ${this._statusResponse.sensors.lastUpdate / 1000} s)
-        ${PumpStatus[this._statusResponse.pump.status]}</span
-      >
-      <span>Date: ${new Date(this._statusResponse.date).toString()}</span>
+      <div class="flex flex-col">
+        <span class="block"
+          >Status (last update: ${this._statusResponse.sensors.lastUpdate / 1000} s)
+          ${PumpStatus[this._statusResponse.pump.status]}</span
+        >
+        <div class="flex">
+          <svg class="h-6 mr-4" viewBox="0 96 960 960">
+            <use href="#today"></use>
+          </svg>
+          Date: ${new Date(this._statusResponse.date).toLocaleString()}
+        </div>
+        ${this._statusResponse.ntp.sunrise
+          ? html`<div class="flex">
+              <svg class="h-6 mr-4" viewBox="0 96 960 960">
+                <use href="#twilight"></use>
+              </svg>
+              Sunrise: ${new Date(this._statusResponse.ntp.sunrise).toLocaleTimeString()} Sunset:
+              ${new Date(this._statusResponse.ntp.sunset).toLocaleTimeString()}
+            </div>`
+          : nothing}
+      </div>
       <div class="flex">
         <svg class="h-6 mr-4" viewBox="0 96 960 960">
           <use href="${fanIcon}"></use>
@@ -92,6 +108,7 @@ export class StatusCard extends LitElement {
           (${this._statusResponse.sensors.phVoltage.value} ${this._statusResponse.sensors.phVoltage.unit})`,
         )}
         ${this.renderListEntry("#water_tds", this.renderSensor("TDS", this._statusResponse.sensors.tds))}
+        ${this.renderListEntry("#water_ec", this.renderSensor("EC", this._statusResponse.sensors.ec))}
       </ul>
     </div>`;
   }

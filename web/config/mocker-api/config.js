@@ -10,6 +10,8 @@ const proxy = {
         enabled: true,
         running: true,
         runUntil: new Date(Date.now() + 1000000).toISOString(),
+        lastPumpStartTankLevel: 10,
+        lastPumpEndTankLevel: 8,
       },
       date: new Date().toISOString(),
       wifiStatus: "Connected",
@@ -57,7 +59,11 @@ const proxy = {
         },
         tds: {
           unit: "ppm",
-          value: 0,
+          value: 250,
+        },
+        ec: {
+          unit: "ms/cm",
+          value: 500,
         },
       },
     });

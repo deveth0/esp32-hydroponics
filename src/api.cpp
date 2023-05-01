@@ -170,6 +170,8 @@ void handleApiStatus(AsyncWebServerRequest *request)
   doc["pump"]["enabled"] = pumpEnabled;
   doc["pump"]["running"] = PumpHandler::instance().pumpRunning();
   doc["pump"]["runUntil"] = PumpHandler::instance().pumpRunUntil;
+  doc["pump"]["lastPumpStartTankLevel"] = PumpHandler::instance().pumpStartTankLevel();
+  doc["pump"]["lastPumpEndTankLevel"] = PumpHandler::instance().pumpEndTankLevel();
   doc["wifiStatus"] = HYDROPONICS_CONNECTED ? F("Connected") : F("Disconnected");
   doc["mqttStatus"] = (!mqttEnabled || mqttServer[0] == 0) ? F("Disabled") : HYDROPONICS_MQTT_CONNECTED ? F("Connected")
                                                                                                         : F("Disconnected");
@@ -182,11 +184,15 @@ void handleApiStatus(AsyncWebServerRequest *request)
   ntp["connected"] = ntpConnected;
   ntp["lastSyncTime"] = ntpLastSyncTime;
   ntp["packetSendTime"] = ntpPacketSentTime;
-  getTimeString(sunset, timeString, sizeof(timeString));
-  ntp["sunset"] = timeString;
 
-  getTimeString(sunrise, timeString, sizeof(timeString));
-  ntp["sunrise"] = timeString;
+  if (sunset != 0 && sunrise != 0)
+  {
+    getTimeString(sunset, timeString, sizeof(timeString));
+    ntp["sunset"] = timeString;
+
+    getTimeString(sunrise, timeString, sizeof(timeString));
+    ntp["sunrise"] = timeString;
+  }
 
   JsonObject sensors = doc.createNestedObject("sensors");
 
@@ -204,6 +210,7 @@ void handleApiStatus(AsyncWebServerRequest *request)
   addSensorStatus(sensors, F("ph"), F("pH"), lastPh != __FLT_MAX__ ? lastPh : 0);
   addSensorStatus(sensors, F("phVoltage"), F("V"), lastPhVoltage);
   addSensorStatus(sensors, F("tds"), F("ppm"), lastTds != __FLT_MAX__ ? lastTds : 0);
+  addSensorStatus(sensors, F("ec"), F("ms/cm"), lastEc != __FLT_MAX__ ? lastEc : 0);
 
   String data;
   serializeJson(doc, data);

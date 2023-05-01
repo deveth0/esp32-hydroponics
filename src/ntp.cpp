@@ -14,13 +14,23 @@ void initNtp()
 void getTimeString(char *out, size_t len)
 {
   updateLocalTime();
-  time_t now = time_t(toki.second());
-  getTimeString(now, out, len);
+  getTimeString(localTime, out, len);
 }
 
 void getTimeString(time_t time, char *out, size_t len)
 {
   strftime(out, len, "%FT%TZ", localtime(&time));
+}
+
+bool isDaytime()
+{
+  if (sunrise == 0 || sunset == 0)
+    return true;
+  if (localTime < sunrise)
+    return false;
+  if (localTime > sunset)
+    return false;
+  return true;
 }
 
 void sendNTPPacket()

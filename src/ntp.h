@@ -9,7 +9,7 @@ bool checkNTPResponse();
 void updateLocalTime();
 void getTimeString(char *out, size_t len);
 void getTimeString(time_t time, char *out, size_t len);
-byte weekdayMondayFirst();
 void checkTimers();
 void calculateSunriseAndSunset();
+boolean isDaytime();
 #endif

@@ -8,3 +8,12 @@ declare module "*.svg" {
   const content: SVGIcon;
   export default content;
 }
+
+declare module "*.png" {
+  interface PNGImage {
+    src: string;
+  }
+
+  const src: PNGImage;
+  export default src;
+}

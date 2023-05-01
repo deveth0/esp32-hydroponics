@@ -30,6 +30,7 @@ module.exports = function (env, argv) {
           use: "ts-loader",
           exclude: /node_modules/,
         },
+        { test: /\.png$/, type: "asset/resource" },
         {
           test: /\.s[ac]ss$/i,
           use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader", "postcss-loader"],

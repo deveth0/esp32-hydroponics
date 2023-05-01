@@ -24,6 +24,8 @@ export interface PumpStatusResponse {
   enabled: boolean;
   running: boolean;
   runUntil: number;
+  lastPumpStartTankLevel: number;
+  lastPumpEndTankLevel: number;
 }
 
 export interface StatusResponse {
@@ -31,6 +33,13 @@ export interface StatusResponse {
   pump: PumpStatusResponse;
   wifiStatus: ConnectionStatus;
   mqttStatus: ConnectionStatus;
+  ntp: {
+    connected: boolean;
+    lastSyncTime: number;
+    packetSendTime: number;
+    sunset?: string;
+    sunrise?: string;
+  };
   sensors: {
     lastUpdate: number;
     distance: Sensor;
@@ -41,6 +50,7 @@ export interface StatusResponse {
     ph: Sensor;
     phVoltage: Sensor;
     tds: Sensor;
+    ec: Sensor;
     volume: Sensor;
   };
 }

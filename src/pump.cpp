@@ -5,11 +5,23 @@ PumpHandler::PumpHandler()
 {
 }
 
-bool PumpHandler::pumpRunning(){
+bool PumpHandler::pumpRunning()
+{
   return _pumpRunning;
 }
 
-void PumpHandler::manualPumpRun(int duration){
+int PumpHandler::pumpStartTankLevel()
+{
+  return _pumpStartTankLevel;
+}
+
+int PumpHandler::pumpEndTankLevel()
+{
+  return _pumpEndTankLevel;
+}
+
+void PumpHandler::manualPumpRun(int duration)
+{
   pumpStatus = MANUAL_RUN;
   enablePump(duration);
 }
@@ -47,7 +59,8 @@ void PumpHandler::handlePump()
   }
 
   // emptying run, no need to do anything
-  if(pumpRunUntil == -1 ) return;
+  if (pumpRunUntil == -1)
+    return;
 
   if (pumpRunUntil > 0)
   {
@@ -58,7 +71,7 @@ void PumpHandler::handlePump()
       return;
     }
 
-    if (fillHeight <= pumpStartTankLevel - maxWaterLevelDifferenceCm)
+    if (fillHeight <= _pumpStartTankLevel - maxWaterLevelDifferenceCm)
     {
       // water level falls to rapidly
       disablePump();
@@ -76,6 +89,10 @@ void PumpHandler::handlePump()
     // no temperature available
     return;
   }
+
+  // don't run during the night
+  if (!isDaytime())
+    return;
 
   // minutes since last run
   timer = (millis() - lastPumpRun) / 60000;
@@ -111,21 +128,23 @@ void PumpHandler::handlePump()
 
   if (interval > 0 && timer > interval)
   {
-    DEBUG_PRINTF("Last pump run %d minutes ago, starting for %d minutes...\n", timer, duration);
+    DEBUG_PRINTF("Last pump run %d minutes ago, starting for %d seconds...\n", timer, duration);
     pumpStatus = SCHEDULED_RUN;
-    enablePump(duration * 60000);
+    enablePump(duration * 1000);
   }
 }
 
 void PumpHandler::disablePump()
 {
   digitalWrite(PUMP_MOSFET_PIN, LOW);
+
   _pumpRunning = false;
   publishMqtt("pump", "OFF");
   pumpRunUntil = 0;
+  _pumpEndTankLevel = tankHeight - lastDistance;
 }
 
-void PumpHandler::enablePump(long duration) 
+void PumpHandler::enablePump(long duration)
 {
   if (lastDistance == __INT_MAX__ || SensorsHandler::instance().getTankVolume() == 0)
   {
@@ -152,7 +171,8 @@ void PumpHandler::enablePump(long duration)
   {
     pumpRunUntil = lastPumpRun + duration;
   }
-  pumpStartTankLevel = fillHeight;
+  _pumpStartTankLevel = fillHeight;
+  _pumpEndTankLevel = -1;
   digitalWrite(PUMP_MOSFET_PIN, HIGH);
   _pumpRunning = true;
   publishMqtt("pump", "ON");
