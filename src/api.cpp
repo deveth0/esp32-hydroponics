@@ -26,8 +26,14 @@ void initApi()
   server.addHandler(new AsyncCallbackJsonWebHandler("/api/config/time.json", [](AsyncWebServerRequest *request, JsonVariant &json)
                                                     { handleApiConfigTimePOST(request, json); }));
 
-  server.on("/api/wifi.json", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/api/wifiscan.json", HTTP_GET, [](AsyncWebServerRequest *request)
             { handleWiFiNetworkList(request); });
+
+  server.on("/api/config/mqtt.json", HTTP_GET, [](AsyncWebServerRequest *request)
+            { handleApiConfigMqtt(request); });
+
+  server.addHandler(new AsyncCallbackJsonWebHandler("/api/config/mqtt.json", [](AsyncWebServerRequest *request, JsonVariant &json)
+                                                    { handleApiConfigMqttPOST(request, json); }));
 }
 
 void handleApiConfigSensors(AsyncWebServerRequest *request)
@@ -159,6 +165,49 @@ void handleApiConfigPumpPOST(AsyncWebServerRequest *request, JsonVariant &json)
   doSerializeConfig = true;
 
   handleApiConfigPump(request);
+}
+
+void handleApiConfigMqtt(AsyncWebServerRequest *request)
+{
+
+  DynamicJsonDocument doc(512);
+
+  doc["enabled"] = mqttEnabled;
+  doc["broker"] = mqttServer;
+  doc["port"] = mqttPort;
+  doc["user"] = mqttUser;
+  byte l = strlen(mqttPass);
+  char fpass[l + 1]; // fill password field with ***
+  fpass[l] = 0;
+  memset(fpass, '*', l);
+  doc["pwd"] = fpass;
+  doc["clientId"] = mqttClientID;
+  doc["deviceTopic"] = mqttDeviceTopic;
+  doc["groupTopic"] = mqttGroupTopic;
+
+  String data;
+  serializeJson(doc, data);
+  request->send(200, "application/json", data);
+}
+
+void handleApiConfigMqttPOST(AsyncWebServerRequest *request, JsonVariant &json)
+{
+  StaticJsonDocument<512> data = json.as<JsonObject>();
+
+  mqttEnabled = data["enabled"];
+  strlcpy(mqttServer, data["broker"], 33);
+  mqttPort = data["port"];
+  strlcpy(mqttUser, data["user"], 33);
+  if (!isAsterisksOnly(data["pwd"], 41))
+    strlcpy(mqttPass, data["pwd"], 65);
+
+  strlcpy(mqttClientID, data["clientId"], 33);
+  strlcpy(mqttDeviceTopic, data["deviceTopic"], 33);
+  strlcpy(mqttGroupTopic, data["groupTopic"], 33);
+
+  doSerializeConfig = true;
+
+  handleApiConfigMqtt(request);
 }
 
 void handleApiStatus(AsyncWebServerRequest *request)

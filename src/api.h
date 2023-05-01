@@ -21,6 +21,11 @@ void handleApiConfigSensorsPOST(AsyncWebServerRequest *request, JsonVariant &jso
  */
 void handleApiConfigPump(AsyncWebServerRequest *request);
 void handleApiConfigPumpPOST(AsyncWebServerRequest *request, JsonVariant &json);
+/**
+ * Read / write mqtt config
+ */
+void handleApiConfigMqtt(AsyncWebServerRequest *request);
+void handleApiConfigMqttPOST(AsyncWebServerRequest *request, JsonVariant &json);
 
 /**
  * Read / write time config

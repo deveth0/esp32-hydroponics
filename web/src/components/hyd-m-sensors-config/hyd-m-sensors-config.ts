@@ -1,6 +1,7 @@
 import { customElement, query, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 import { apiFetch, apiPostJson } from "../../util";
+import { renderFormInputNumber } from "../formFields";
 
 interface SensorsConfigResponse {
   ph: SensorsConfigPhResponse;
@@ -111,145 +112,94 @@ export class SensorsConfig extends LitElement {
       <form id="sensors-config-form" @submit="${this.handleSubmit}">
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">PH calibration</legend>
-          <label for="phAcidVoltage">PH Acid Voltage (4.0 pH)</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="phAcidVoltage"
-            name="phAcidVoltage"
-            value="${this._sensorsConfig?.ph.acidVoltage}"
-          />
-          <label for="phNeutralVoltage">PH Neutral Voltage (7.0 pH)</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="phNeutralVoltage"
-            name="phNeutralVoltage"
-            value="${this._sensorsConfig?.ph.neutralVoltage}"
-          />
+          ${renderFormInputNumber(
+            "PH Acid Voltage (4.0 pH)",
+            "phAcidVoltage",
+            this._sensorsConfig?.ph.acidVoltage,
+            0.01,
+            0,
+          )}
+          ${renderFormInputNumber(
+            "PH Neutral Voltage (7.0 pH)",
+            "phNeutralVoltage",
+            this._sensorsConfig?.ph.neutralVoltage,
+            0.01,
+            0,
+          )}
         </fieldset>
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">Temperature Offsets</legend>
           <label for="temperatureAdjustment">Temperature Adjustment</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="temperatureAdjustment"
-            name="temperatureAdjustment"
-            step="0.5"
-            value="${this._sensorsConfig?.temperature.adjustment}"
-          />
-          <label for="waterTemperatureAdjustment">Water Temperature Adjustment</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="waterTemperatureAdjustment"
-            name="waterTemperatureAdjustment"
-            step="0.5"
-            value="${this._sensorsConfig?.waterTemperature.adjustment}"
-          />
+          ${renderFormInputNumber(
+            "Temperature Adjustment",
+            "temperatureAdjustment",
+            this._sensorsConfig?.temperature.adjustment,
+            0.5,
+            0,
+          )}
+          ${renderFormInputNumber(
+            "Water Temperature Adjustment",
+            "waterTemperatureAdjustment",
+            this._sensorsConfig?.waterTemperature.adjustment,
+            0.5,
+            0,
+          )}
         </fieldset>
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">Tank</legend>
-          <label for="tankWidth">Tank Width</label>
-          <input
-            class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="tankWidth"
-            name="tankWidth"
-            value="${this._sensorsConfig?.tank.width}"
-          />
-          <label for="tankHeight">Tank Height</label>
-          <input
-            class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="tankHeight"
-            name="tankHeight"
-            value="${this._sensorsConfig?.tank.height}"
-          />
-          <label for="tankLength">Tank Length</label>
-          <input
-            class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="tankLength"
-            name="tankLength"
-            value="${this._sensorsConfig?.tank.length}"
-          />
+          ${renderFormInputNumber("Tank Width", "tankWidth", this._sensorsConfig?.tank.width, 1, 1)}
+          ${renderFormInputNumber("Tank Height", "tankHeight", this._sensorsConfig?.tank.height, 1, 1)}
+          ${renderFormInputNumber("Tank Length", "tankLength", this._sensorsConfig?.tank.length, 1, 1)}
         </fieldset>
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">Pump Tank Level Configs</legend>
-          <label for="minWaterLevel">Min Water Level (cm)</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="minWaterLevel"
-            name="minWaterLevel"
-            min="1"
-            value="${this._sensorsConfig?.tank.minWaterLevel}"
-          />
-          <label for="maxWaterLevelDifference">Max difference during pump cycle (cm)</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="maxWaterLevelDifference"
-            name="maxWaterLevelDifference"
-            min="1"
-            value="${this._sensorsConfig?.tank.maxWaterLevelDifference}"
-          />
+          ${renderFormInputNumber(
+            "Min Water Level (cm)",
+            "minWaterLevel",
+            this._sensorsConfig?.tank.minWaterLevel,
+            1,
+            1,
+          )}
+          ${renderFormInputNumber(
+            "Max difference during pump cycle (cm)",
+            "maxWaterLevelDifference",
+            this._sensorsConfig?.tank.maxWaterLevelDifference,
+            1,
+            1,
+          )}
         </fieldset>
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">Measurements</legend>
-
-          <label for="numberMeasurements">Number Measurements</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="numberMeasurements"
-            name="numberMeasurements"
-            min="1"
-            value="${this._sensorsConfig?.measurement.numberMeasurements}"
-          />
-          <label for="temperatureInterval">Temperature Interval</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="temperatureInterval"
-            name="temperatureInterval"
-            min="1"
-            value="${this._sensorsConfig?.measurement.temperatureInterval}"
-          />
-          <label for="distanceInterval">Distance interval</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="distanceInterval"
-            name="distanceInterval"
-            value="${this._sensorsConfig?.measurement.distanceInterval}"
-          />
-          <label for="phTdsInterval">PH - TDS Interval</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="phTdsInterval"
-            name="phTdsInterval"
-            value="${this._sensorsConfig?.measurement.phTdsInterval}"
-          />
-          <label for="phOnTime">PH On Time</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="phOnTime"
-            name="phOnTime"
-            value="${this._sensorsConfig?.measurement.phOnTime}"
-          />
-          <label for="tdsOnTime">TDS On Time</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="tdsOnTime"
-            name="tdsOnTime"
-            value="${this._sensorsConfig?.measurement.tdsOnTime}"
-          />
+          ${renderFormInputNumber(
+            "Number of measurements",
+            "numberMeasurements",
+            this._sensorsConfig?.measurement.numberMeasurements,
+            1,
+            1,
+          )}
+          ${renderFormInputNumber(
+            "Temperature Interval",
+            "temperatureInterval",
+            this._sensorsConfig?.measurement.temperatureInterval,
+            1,
+            1,
+          )}
+          ${renderFormInputNumber(
+            "Distance Interval",
+            "distanceInterval",
+            this._sensorsConfig?.measurement.distanceInterval,
+            1,
+            1,
+          )}
+          ${renderFormInputNumber(
+            "PH - TDS Interval",
+            "phTdsInterval",
+            this._sensorsConfig?.measurement.phTdsInterval,
+            1,
+            1,
+          )}
+          ${renderFormInputNumber("PH On Time", "phOnTime", this._sensorsConfig?.measurement.phOnTime, 1, 1)}
+          ${renderFormInputNumber("TDS On Time", "tdsOnTime", this._sensorsConfig?.measurement.tdsOnTime, 1, 1)}
         </fieldset>
         <button class="btn-primary" type="submit">Save</button>
       </form>

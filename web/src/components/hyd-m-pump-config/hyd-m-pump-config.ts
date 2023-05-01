@@ -1,6 +1,7 @@
 import { customElement, query, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 import { apiFetch, apiPostJson } from "../../util";
+import { renderFormInputCheckbox } from "../formFields";
 
 interface ConfigResponse {
   pumpEnabled: boolean;
@@ -61,7 +62,7 @@ export class PumpConfig extends LitElement {
 
     apiPostJson<unknown, ConfigResponse>("/api/config/pump.json", {
       pumpConfig: newPumpConfig,
-      pumpEnabled: this._pumpEnabled,
+      pumpEnabled: formData.get("pumpEnabled") === "on",
     })
       .then(response => {
         this._pumpConfig = response.pumpConfig;
@@ -78,10 +79,7 @@ export class PumpConfig extends LitElement {
       <form id="pump-config-form" @submit="${this.handleSubmit}">
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">Pump</legend>
-          <div class="mb-4 flex">
-            <label class="block text-grey-700 text-sm font-bold mb-2 mr-10" for="pumpEnabled">Enable Pump</label>
-            <input type="checkbox" checked="${this._pumpEnabled}" id="pumpEnabled" name="pumpEnabled" />
-          </div>
+          ${renderFormInputCheckbox("Enable Pump", "pumpEnabled", this._pumpEnabled)}
         </fieldset>
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">Temperature based cycles</legend>

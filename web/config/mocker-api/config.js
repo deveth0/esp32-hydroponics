@@ -148,7 +148,46 @@ const proxy = {
       runUntil: new Date(Date.now() + req.body.duration).toISOString(),
     });
   },
-  "GET /api/wifi.json": (req, res) => {
+  "GET /api/config/wifi.json": (req, res) => {
+    return res.json({
+      wifi: {
+        ssid: "Foobar",
+        pwd: "**********",
+        staticIp: [0, 0, 0, 0],
+        gateway: [0, 0, 0, 0],
+        subway: [0, 0, 0, 0],
+      },
+      mdns: {
+        address: "foo-hydroponics",
+      },
+      ap: {
+        ssid: "hydroponics-ap",
+        pwd: "**********",
+        hideAp: true,
+        channel: 2,
+        opensOn: 2,
+      },
+    });
+  },
+  "POST /api/config/wifi.json": (req, res) => {
+    return res.json(req.body);
+  },
+  "GET /api/config/mqtt.json": (req, res) => {
+    return res.json({
+      enabled: true,
+      broker: "foobar.com",
+      port: 1312,
+      user: "foobar",
+      pwd: "*******",
+      clientId: "12345-hydroponics",
+      deviceTopic: "foo-topic",
+      groupTopic: "hydroponics/all",
+    });
+  },
+  "POST /api/config/mqtt.json": (req, res) => {
+    return res.json(req.body);
+  },
+  "GET /api/wifiscan.json": (req, res) => {
     if (Math.random() > 0.3) {
       return res.json({
         status: "success",

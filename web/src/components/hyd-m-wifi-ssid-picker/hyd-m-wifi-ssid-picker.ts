@@ -85,7 +85,7 @@ export class WifiSsidPicker extends LitElement {
   }
 
   private _loadWifiNetworks() {
-    const url = "/api/wifi.json";
+    const url = "/api/wifiscan.json";
     this._wifiNetworks = [];
     this._isLoading = true;
     apiFetch<WifiApiResponse>(url, {
