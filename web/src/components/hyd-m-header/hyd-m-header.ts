@@ -1,7 +1,6 @@
 import { customElement } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 
-import src from "../../assets/logo_small.png";
 @customElement("hyd-m-header")
 export class Header extends LitElement {
   createRenderRoot() {
@@ -11,12 +10,17 @@ export class Header extends LitElement {
   render() {
     return html`
       <hyd-m-svg-loader></hyd-m-svg-loader>
-      <header class="hyd-m-header flex flew-row mb-8">
-        <img src="${src}" class="h-20 mr-4" />
-        <h3 class="text-primary text-4xl font-bold mt-8">
-          <a href="/">ESP32-hydroponics </a>
-        </h3>
-        <a class="ml-auto inline-flex items-center hover:text-secondary hover:fill-secondary" href="/settings.html">
+      <header class="hyd-m-header px-8 flex flew-row mb-8 bg-gray-700  items-center">
+        <a class="flex flex-row" href="/">
+          <svg class="h-20 mr-4" viewBox="0 0 303 303">
+            <use href="#logo_small"></use>
+          </svg>
+        </a>
+        <h3 class="text-primary text-4xl font-bold">ESP32-hydroponics</h3>
+        <a
+          class="ml-auto text-white inline-flex items-center hover:text-secondary hover:fill-secondary"
+          href="/settings.html"
+        >
           <svg class="h-6" viewBox="0 96 960 960">
             <use href="#settings"></use>
           </svg>

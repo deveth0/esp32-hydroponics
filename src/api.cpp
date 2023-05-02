@@ -26,8 +26,20 @@ void initApi()
   server.addHandler(new AsyncCallbackJsonWebHandler("/api/config/time.json", [](AsyncWebServerRequest *request, JsonVariant &json)
                                                     { handleApiConfigTimePOST(request, json); }));
 
-  server.on("/api/wifi.json", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/api/wifiscan.json", HTTP_GET, [](AsyncWebServerRequest *request)
             { handleWiFiNetworkList(request); });
+
+  server.on("/api/config/wifi.json", HTTP_GET, [](AsyncWebServerRequest *request)
+            { handleApiConfigWifi(request); });
+
+  server.addHandler(new AsyncCallbackJsonWebHandler("/api/config/wifi.json", [](AsyncWebServerRequest *request, JsonVariant &json)
+                                                    { handleApiConfigWifiPOST(request, json); }));
+
+  server.on("/api/config/mqtt.json", HTTP_GET, [](AsyncWebServerRequest *request)
+            { handleApiConfigMqtt(request); });
+
+  server.addHandler(new AsyncCallbackJsonWebHandler("/api/config/mqtt.json", [](AsyncWebServerRequest *request, JsonVariant &json)
+                                                    { handleApiConfigMqttPOST(request, json); }));
 }
 
 void handleApiConfigSensors(AsyncWebServerRequest *request)
@@ -159,6 +171,124 @@ void handleApiConfigPumpPOST(AsyncWebServerRequest *request, JsonVariant &json)
   doSerializeConfig = true;
 
   handleApiConfigPump(request);
+}
+
+void handleApiConfigWifi(AsyncWebServerRequest *request)
+{
+
+  DynamicJsonDocument doc(512);
+
+  JsonObject wifiConfig = doc.createNestedObject("wifi");
+  wifiConfig["ssid"] = clientSSID;
+  byte l = 16;
+  char fpass[l + 1]; // fill password field with ***
+  fpass[l] = 0;
+  memset(fpass, '*', l);
+  wifiConfig["pwd"] = fpass;
+
+  JsonArray ipArray = wifiConfig.createNestedArray("staticIp");
+  JsonArray gatewayArray = wifiConfig.createNestedArray("gateway");
+  JsonArray subnetArray = wifiConfig.createNestedArray("subnet");
+
+  for (int i = 0; i < 4; i++)
+  {
+    ipArray.add(staticIP[i]);
+    gatewayArray.add(staticGateway[i]);
+    subnetArray.add(staticSubnet[i]);
+  }
+
+  doc["mdns"]["address"] = cmDNS;
+
+  JsonObject apConfig = doc.createNestedObject("ap");
+  apConfig["ssid"] = apSSID;
+  apConfig["pwd"] = fpass;
+  apConfig["hideAp"] = apHide == 1;
+  apConfig["channel"] = apChannel;
+  apConfig["opensOn"] = apBehavior;
+
+  String data;
+  serializeJson(doc, data);
+  request->send(200, "application/json", data);
+}
+
+void handleApiConfigWifiPOST(AsyncWebServerRequest *request, JsonVariant &json)
+{
+  StaticJsonDocument<512> data = json.as<JsonObject>();
+
+  JsonObject wifiConfig = data["wifi"];
+  strlcpy(clientSSID, wifiConfig["ssid"], 33);
+  if (!isAsterisksOnly(wifiConfig["pwd"], 41))
+    strlcpy(clientPass, wifiConfig["pwd"], 65);
+
+  JsonArray ipArray = wifiConfig["staticIp"].as<JsonArray>();
+  JsonArray gatewayArray = wifiConfig["gateway"].as<JsonArray>();
+  JsonArray subnetArray = wifiConfig["subnet"].as<JsonArray>();
+
+  for (int i = 0; i < 4; i++)
+  {
+    staticIP[i] = ipArray[i];
+    staticGateway[i] = gatewayArray[i];
+    staticSubnet[i] = subnetArray[i];
+  }
+
+  strlcpy(cmDNS, data["mdns"]["address"], 33);
+
+  JsonObject apConfig = data["ap"];
+  strlcpy(apSSID, apConfig["ssid"], 33);
+  if (!isAsterisksOnly(apConfig["pwd"], 41))
+    strlcpy(apPass, apConfig["pwd"], 65);
+
+  apHide = apConfig["hideAp"] == true ? 1 : 0;
+  apChannel = apConfig["channel"];
+  apBehavior = apConfig["opensOn"];
+
+  doSerializeConfig = true;
+  forceReconnect = true;
+
+  handleApiConfigWifi(request);
+}
+
+void handleApiConfigMqtt(AsyncWebServerRequest *request)
+{
+
+  DynamicJsonDocument doc(512);
+
+  doc["enabled"] = mqttEnabled;
+  doc["broker"] = mqttServer;
+  doc["port"] = mqttPort;
+  doc["user"] = mqttUser;
+  byte l = 16;
+  char fpass[l + 1]; // fill password field with ***
+  fpass[l] = 0;
+  memset(fpass, '*', l);
+  doc["pwd"] = fpass;
+  doc["clientId"] = mqttClientID;
+  doc["deviceTopic"] = mqttDeviceTopic;
+  doc["groupTopic"] = mqttGroupTopic;
+
+  String data;
+  serializeJson(doc, data);
+  request->send(200, "application/json", data);
+}
+
+void handleApiConfigMqttPOST(AsyncWebServerRequest *request, JsonVariant &json)
+{
+  StaticJsonDocument<512> data = json.as<JsonObject>();
+
+  mqttEnabled = data["enabled"];
+  strlcpy(mqttServer, data["broker"], 33);
+  mqttPort = data["port"];
+  strlcpy(mqttUser, data["user"], 33);
+  if (!isAsterisksOnly(data["pwd"], 41))
+    strlcpy(mqttPass, data["pwd"], 65);
+
+  strlcpy(mqttClientID, data["clientId"], 33);
+  strlcpy(mqttDeviceTopic, data["deviceTopic"], 33);
+  strlcpy(mqttGroupTopic, data["groupTopic"], 33);
+
+  doSerializeConfig = true;
+
+  handleApiConfigMqtt(request);
 }
 
 void handleApiStatus(AsyncWebServerRequest *request)

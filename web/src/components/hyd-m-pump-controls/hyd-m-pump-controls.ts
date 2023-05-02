@@ -1,5 +1,5 @@
 import { customElement, state } from "lit/decorators.js";
-import { html, LitElement } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { apiPostJson } from "../../util";
 import { PumpStatusResponse } from "../../data/StatusResponse";
 
@@ -7,6 +7,8 @@ import { PumpStatusResponse } from "../../data/StatusResponse";
 export class PumpConfig extends LitElement {
   @state()
   private _pumpStatus: PumpStatusResponse;
+  @state()
+  private _isLoading = false;
 
   createRenderRoot() {
     return this; // turn off shadow dom to access external styles
@@ -18,17 +20,27 @@ export class PumpConfig extends LitElement {
 
   render() {
     return html` <div class="mb-12">
-      <h2 class="mb-6 text-lg font-bold text-gray-500">Controls</h2>
+      <h2 class="page-headline">Controls</h2>
       ${this._pumpStatus?.enabled
         ? html`<h4>Pump running until ${new Date(this._pumpStatus.runUntil).toString()}</h4>`
-        : html` <button class="btn-primary" type="submit" @click="${() => this._runPump(60 * 1000)}">
+        : html`<div class="flex space-x-4">
+            <button
+              class="btn-primary"
+              ?disabled=${this._isLoading}
+              type="submit"
+              @click="${() => this._runPump(60 * 1000)}"
+            >
               Start Pump for 1 minute
             </button>
-            <button class="btn-primary" @click="${() => this._runPump(-1)}" type="submit">Empty tank</button>`}
+            <button class="btn-primary" ?disabled=${this._isLoading} @click="${() => this._runPump(-1)}" type="submit">
+              Empty tank
+            </button>
+          </div>`}
     </div>`;
   }
 
   private _runPump(duration: number) {
+    this._isLoading = true;
     apiPostJson<unknown, PumpStatusResponse>("/api/pump.json", {
       duration,
     })
@@ -37,6 +49,9 @@ export class PumpConfig extends LitElement {
       })
       .catch(error => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        this._isLoading = false;
       });
   }
 }

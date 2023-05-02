@@ -92,8 +92,10 @@ void PumpHandler::handlePump()
 
   // don't run during the night
   if (!isDaytime())
+  {
+    pumpStatus = NIGHTTIME;
     return;
-
+  }
   // minutes since last run
   timer = (millis() - lastPumpRun) / 60000;
 

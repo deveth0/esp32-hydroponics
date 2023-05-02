@@ -44,7 +44,6 @@
 #include "cfg.h"
 #include "file.h"
 #include "mqtt.h"
-#include "settings.h"
 #include "web.h"
 #include "api.h"
 #include "sensors.h"
@@ -203,6 +202,7 @@ HYDROPONICS_GLOBAL u_int pumpGt25Duration _INIT(0);
 
 enum PumpStatus
 {
+  NIGHTTIME = 100,
   SCHEDULED_RUN = 200,
   SCHEDULED_STOP = 201,
   MANUAL_RUN = 202,

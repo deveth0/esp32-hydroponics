@@ -231,6 +231,6 @@ float SensorsHandler::readTDSValue()
   float compensationVolatge = lastTdsVoltage / compensationCoefficient;                                                                                                                  // temperature compensation
   float tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge - 255.86 * compensationVolatge * compensationVolatge + 857.39 * compensationVolatge) * 0.5; // convert voltage value to tds value
 
-  tdsValue = roundf(tdsValue / 50) * 50;
+  tdsValue = roundf(tdsValue / 10) * 10;
   return tdsValue;
 }

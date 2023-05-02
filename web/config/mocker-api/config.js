@@ -148,7 +148,46 @@ const proxy = {
       runUntil: new Date(Date.now() + req.body.duration).toISOString(),
     });
   },
-  "GET /api/wifi.json": (req, res) => {
+  "GET /api/config/wifi.json": (req, res) => {
+    return res.json({
+      wifi: {
+        ssid: "Foobar",
+        pwd: "**********",
+        staticIp: [0, 0, 0, 0],
+        gateway: [0, 0, 0, 0],
+        subnet: [0, 0, 0, 0],
+      },
+      mdns: {
+        address: "foo-hydroponics",
+      },
+      ap: {
+        ssid: "hydroponics-ap",
+        pwd: "**********",
+        hideAp: true,
+        channel: 2,
+        opensOn: 2,
+      },
+    });
+  },
+  "POST /api/config/wifi.json": (req, res) => {
+    return res.json(req.body);
+  },
+  "GET /api/config/mqtt.json": (req, res) => {
+    return res.json({
+      enabled: true,
+      broker: "foobar.com",
+      port: 1312,
+      user: "foobar",
+      pwd: "*******",
+      clientId: "12345-hydroponics",
+      deviceTopic: "foo-topic",
+      groupTopic: "hydroponics/all",
+    });
+  },
+  "POST /api/config/mqtt.json": (req, res) => {
+    return res.json(req.body);
+  },
+  "GET /api/wifiscan.json": (req, res) => {
     if (Math.random() > 0.3) {
       return res.json({
         status: "success",
@@ -167,20 +206,6 @@ const proxy = {
   },
   "POST /settings/wifi.html": (req, res) => {
     res.redirect("/index.html");
-  },
-  "GET /settings/s.js": (req, res) => {
-    const p = req.query.p;
-    let response;
-    if (p === "1") {
-      response =
-        'function GetV(){var d=document;d.Sf.CS.value="Sesame Street";d.Sf.CP.value="***************";d.Sf.I0.value=0;d.Sf.G0.value=0;d.Sf.S0.value=255;d.Sf.I1.value=0;d.Sf.G1.value=0;d.Sf.S1.value=255;d.Sf.I2.value=0;d.Sf.G2.value=0;d.Sf.S2.value=255;d.Sf.I3.value=0;d.Sf.G3.value=0;d.Sf.S3.value=0;d.Sf.CM.value="hydroponics-cc9bf0";d.Sf.AB.selectedIndex=0;d.Sf.AS.value="HYDROPONICS-AP";d.Sf.AH.checked=0;d.Sf.AP.value="*********";d.Sf.AC.value=1;d.getElementsByClassName("sip")[0].innerHTML="10.0.20.38";d.getElementsByClassName("sip")[1].innerHTML="192.168.4.1";}';
-    }
-    if (p === "4") {
-      response =
-        'function GetV(){var d=document;d.Sf.MQ.checked=1;d.Sf.MS.value="";d.Sf.MQPORT.value=1883;d.Sf.MQUSER.value="";d.Sf.MQPASS.value="";d.Sf.MQCID.value="HYDROPONICS-cc9bf0";d.Sf.MD.value="hydroponics/cc9bf0";d.Sf.MG.value="wled/all";}';
-    }
-    res.type("text/javascript");
-    return res.send(response);
   },
 };
 module.exports = delay(proxy, DELAY_TIME);

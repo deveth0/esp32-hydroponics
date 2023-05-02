@@ -1,10 +1,11 @@
 import { customElement, query, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 import { apiFetch, apiPostJson } from "../../util";
+import { renderButton } from "../elements";
+import { renderFormInputNumber, renderFormInputText } from "../formFields";
 
 interface TimeConfigResponse {
   ntpServer: string;
-  timezone: number;
   longitude: number;
   latitude: number;
 }
@@ -13,9 +14,10 @@ interface TimeConfigResponse {
 export class TimeConfig extends LitElement {
   @state()
   _timeConfig: TimeConfigResponse;
-
   @query("#time-config-form")
   configForm: HTMLFormElement;
+  @state()
+  private _isLoading = false;
 
   createRenderRoot() {
     return this; // turn off shadow dom to access external styles
@@ -38,12 +40,11 @@ export class TimeConfig extends LitElement {
 
   handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-
+    this._isLoading = true;
     const formData = new FormData(this.configForm);
 
     const submitData = {
       ntpServer: formData.get("ntpServer"),
-      timezone: formData.get("timezone"),
       latitude: formData.get("latitude"),
       longitude: formData.get("longitude"),
     };
@@ -54,46 +55,26 @@ export class TimeConfig extends LitElement {
       })
       .catch(error => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        this._isLoading = false;
       });
   }
 
   render() {
     return html` <div>
-      <h2 class="mb-6 text-lg font-bold text-gray-500">Config</h2>
+      <h2 class="page-headline">Config</h2>
       <form id="time-config-form" @submit="${this.handleSubmit}">
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Time</legend>
-          <label for="ntpServer">NTP Server</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="string"
-            id="ntpServer"
-            name="ntpServer"
-            value="${this._timeConfig?.ntpServer}"
-          />
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Time</legend>
+          ${renderFormInputText("NTP Server", "ntpServer", this._timeConfig?.ntpServer)}
         </fieldset>
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Location</legend>
-          <label for="latitude">Latitude</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="latitude"
-            name="latitude"
-            step="0.01"
-            value="${this._timeConfig?.latitude}"
-          />
-          <label for="longitude">Longitude</label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="number"
-            id="longitude"
-            name="longitude"
-            step="0.01"
-            value="${this._timeConfig?.longitude}"
-          />
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Location</legend>
+          ${renderFormInputNumber("Latitude", "latitude", this._timeConfig?.latitude, 0.01, -90.0, 90)}
+          ${renderFormInputNumber("Longitude", "longitude", this._timeConfig?.longitude, 0.01, -90, 90)}
         </fieldset>
-        <button class="btn-primary" type="submit">Save</button>
+        ${renderButton("Save", this._isLoading, this._timeConfig === undefined)}
       </form>
     </div>`;
   }

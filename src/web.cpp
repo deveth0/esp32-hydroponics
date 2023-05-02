@@ -44,26 +44,6 @@ void initServer()
   server.serveStatic("/main.css", HYDROPONICS_FS, "/main.css").setCacheControl("max-age=600");
   server.serveStatic("/sprite.svg", HYDROPONICS_FS, "/sprite.svg").setCacheControl("max-age=600");
 
-  server.on("/settings/s.js", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              char buf[SETTINGS_STACK_BUF_SIZE + 37];
-              buf[0] = 0;
-              byte subPage = request->arg(F("p")).toInt();
-              if (subPage > 10)
-              {
-                strcpy_P(buf, PSTR("alert('Settings for this request are not implemented.');"));
-                request->send(501, "application/javascript", buf);
-                return;
-              }
-              
-              strcat_P(buf, PSTR("function GetV(){var d=document;"));
-              getSettingsJS(subPage, buf + strlen(buf)); // this may overflow by 35bytes!!!
-              strcat_P(buf, PSTR("}"));
-              request->send(200, "application/javascript", buf); });
-
-  server.on("/settings", HTTP_POST, [](AsyncWebServerRequest *request)
-            { handleSettingsPOST(request); });
-
   server.onNotFound([](AsyncWebServerRequest *request)
                     { request->send(404, "text/html", "Not found"); });
 
@@ -71,30 +51,6 @@ void initServer()
   DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Origin"), "*");
   DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Methods"), "*");
   DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Headers"), "*");
-}
-
-void handleSettingsPOST(AsyncWebServerRequest *request)
-{
-  byte subPage = 0, originalSubPage = 0;
-  const String &url = request->url();
-  if (url.indexOf("sett") >= 0)
-  {
-    if (url.indexOf("wifi") > 0)
-      subPage = 1;
-    else if (url.indexOf("mqtt") > 0)
-      subPage = 4;
-  }
-
-  handleSettingsSet(request, subPage);
-  if (subPage == 1)
-    forceReconnect = true;
-
-  if (subPage == 4)
-    doReboot = true;
-
-  AsyncWebServerResponse *response = request->beginResponse(302);
-  response->addHeader(F("Location"), F("/index.html"));
-  request->send(response);
 }
 
 bool captivePortal(AsyncWebServerRequest *request)
