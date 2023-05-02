@@ -16,6 +16,7 @@ module.exports = function (env, argv) {
       path: path.join(__dirname, "dist"),
       publicPath: "/",
       filename: "app.js",
+      assetModuleFilename: "images/[name][ext][query]",
     },
     resolve: {
       extensions: [".ts", ".js"],

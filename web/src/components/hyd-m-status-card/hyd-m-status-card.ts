@@ -47,7 +47,7 @@ export class StatusCard extends LitElement {
         ? html`(until: ${new Date(this._statusResponse.pump.runUntil).toString()})`
         : nothing;
 
-    return html` <div class="m-4 border rounded p-4">
+    return html` <div class="card">
       <div class="flex flex-col">
         <span class="block"
           >Status (last update: ${this._statusResponse.sensors.lastUpdate / 1000} s)

@@ -2,6 +2,7 @@ import { customElement, query, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 import { apiFetch, apiPostJson } from "../../util";
 import { renderFormInputCheckbox, renderFormInputNumber, renderFormInputText } from "../formFields";
+import { renderButton } from "../elements";
 
 interface MqttConfigResponse {
   enabled: boolean;
@@ -18,9 +19,10 @@ interface MqttConfigResponse {
 export class MqttConfig extends LitElement {
   @state()
   _mqttConfig: MqttConfigResponse = undefined;
-
   @query("#mqtt-config-form")
   configForm: HTMLFormElement;
+  @state()
+  private _isLoading = false;
 
   createRenderRoot() {
     return this; // turn off shadow dom to access external styles
@@ -43,6 +45,7 @@ export class MqttConfig extends LitElement {
 
   handleSubmit(event: SubmitEvent) {
     event.preventDefault();
+    this._isLoading = true;
 
     const formData = new FormData(this.configForm);
 
@@ -61,12 +64,15 @@ export class MqttConfig extends LitElement {
       })
       .catch(error => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        this._isLoading = false;
       });
   }
 
   render() {
     return html` <div>
-      <h2 class="mb-6 text-lg font-bold text-gray-500">Config</h2>
+      <h2 class="mb-6 text-lg font-bold text-gray-300">Config</h2>
       <form id="mqtt-config-form" @submit="${this.handleSubmit}">
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">MQTT</legend>
@@ -88,7 +94,7 @@ export class MqttConfig extends LitElement {
           ${renderFormInputText("Device Topic", "mqttDeviceTopic", this._mqttConfig?.deviceTopic)}
           ${renderFormInputText("Group Topic", "mqttGroupTopic", this._mqttConfig?.groupTopic)}
         </fieldset>
-        <button class="btn-primary" type="submit">Save</button>
+        ${renderButton("Save", this._isLoading, this._mqttConfig === undefined)}
       </form>
     </div>`;
   }

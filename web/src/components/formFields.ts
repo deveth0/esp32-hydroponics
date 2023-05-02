@@ -2,15 +2,8 @@ import { html, TemplateResult } from "lit";
 
 export function renderFormInputText(label: string, name: string, value?: string, password = false): TemplateResult {
   return html` <div class="mb-4 flex">
-    <label for="${name}">${label}</label>
-    <input
-      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none
-    focus:shadow-outline"
-      type="${password ? "password" : "text"}"
-      id=" ${name}"
-      name="${name}"
-      value="${value}"
-    />
+    <label class="form-input-label" for="${name}">${label}</label>
+    <input class="form-input" type="${password ? "password" : "text"}" id="${name}" name="${name}" value="${value}" />
   </div>`;
 }
 
@@ -23,9 +16,9 @@ export function renderFormInputNumber(
   max?: number,
 ): TemplateResult {
   return html` <div class="mb-4 flex">
-    <label for="${name}">${label}</label>
+    <label class="form-input-label" for="${name}">${label}</label>
     <input
-      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+      class="form-input"
       type="number"
       id="${name}"
       name="${name}"

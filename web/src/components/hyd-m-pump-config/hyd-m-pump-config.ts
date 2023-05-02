@@ -2,6 +2,7 @@ import { customElement, query, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 import { apiFetch, apiPostJson } from "../../util";
 import { renderFormInputCheckbox } from "../formFields";
+import { renderButton } from "../elements";
 
 interface ConfigResponse {
   pumpEnabled: boolean;
@@ -17,12 +18,12 @@ interface PumpConfigEntry {
 export class PumpConfig extends LitElement {
   @state()
   _pumpEnabled: boolean;
-
   @state()
   _pumpConfig: Record<string, PumpConfigEntry> = {};
-
   @query("#pump-config-form")
   configForm: HTMLFormElement;
+  @state()
+  private _isLoading = false;
 
   createRenderRoot() {
     return this; // turn off shadow dom to access external styles
@@ -46,7 +47,7 @@ export class PumpConfig extends LitElement {
 
   handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-
+    this._isLoading = true;
     const formData = new FormData(this.configForm);
 
     // collect data in correct format
@@ -70,12 +71,15 @@ export class PumpConfig extends LitElement {
       })
       .catch(error => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        this._isLoading = false;
       });
   }
 
   render() {
     return html` <div>
-      <h2 class="mb-6 text-lg font-bold text-gray-500">Config</h2>
+      <h2 class="mb-6 text-lg font-bold text-gray-300">Config</h2>
       <form id="pump-config-form" @submit="${this.handleSubmit}">
         <fieldset class="border border-solid border-gray-300 p-3">
           <legend class="text-sm">Pump</legend>
@@ -92,16 +96,16 @@ export class PumpConfig extends LitElement {
           ${this.renderFormInput("15 °C - 20 °C", "le20")} ${this.renderFormInput("20 °C - 25 °C", "le25")}
           ${this.renderFormInput("> 25 °C", "gt25")}
         </fieldset>
-        <button class="btn-primary" type="submit">Save</button>
+        ${renderButton("Save", this._isLoading, this._pumpConfig === undefined)}
       </form>
     </div>`;
   }
 
   renderFormInput(label: string, name: string) {
     return html` <div class="grid grid-cols-3 gap-4">
-      <label class="block text-gray-700 text-sm font-bold mr-10" for=${name + "Interval"}>${label}</label>
+      <label class="form-input-label" for=${name + "Interval"}>${label}</label>
       <input
-        class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        class="form-input"
         id=${name + "Interval"}
         name=${name + "Interval"}
         required
@@ -112,7 +116,7 @@ export class PumpConfig extends LitElement {
         placeholder="Minutes"
       />
       <input
-        class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        class="form-input"
         id=${name + "Duration"}
         name=${name + "Duration"}
         required

@@ -21,6 +21,10 @@ interface WifiNetwork {
   enc: number;
 }
 
+export interface SSIDSelectedEvent {
+  ssid: string;
+}
+
 /**
  * Renders a form element plus a "scan" option for ssids
  */
@@ -44,26 +48,19 @@ export class WifiSsidPicker extends LitElement {
   // Render the UI as a function of component state
   render() {
     return html`
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="CS">
-          Network name (SSID, empty to not connect)
-        </label>
-        <input
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="CS"
-          name="CS"
-          placeholder="SSID"
-          type="text"
-        />
-      </div>
       <button
         ?disabled=${this._status === WifiApiStatus.INPROGRESS || this._isLoading}
         id="scan"
-        class="btn-primary"
+        class="btn-primary flex"
         @click="${this._loadWifiNetworks}"
         type="button"
       >
         Scan
+        ${this._isLoading
+          ? html`<svg class="spinner" viewBox="0 0 24 24">
+              <use href="#spinner"></use>
+            </svg>`
+          : nothing}
       </button>
       ${this._status !== WifiApiStatus.FAILED
         ? nothing
@@ -76,12 +73,20 @@ export class WifiSsidPicker extends LitElement {
         ? nothing
         : html` <div class="border border-blue-400 rounded-b bg-blue-100 px-4 py-3 text-blue-700">
             ${this._wifiNetworks.map(
-              network => html` <div class="cursor-pointer" @click="${() => (this.input.value = network.ssid)}">
+              network => html` <div class="cursor-pointer" @click="${() => this.onSelectSSID(network.ssid)}">
                 ${network.ssid} (${network.rssi} dBm)
               </div>`,
             )}
           </div>`}
     `;
+  }
+
+  private onSelectSSID(ssid: string) {
+    this.dispatchEvent(
+      new CustomEvent<SSIDSelectedEvent>("ssid-selected-event", {
+        detail: { ssid },
+      }),
+    );
   }
 
   private _loadWifiNetworks() {
@@ -90,7 +95,7 @@ export class WifiSsidPicker extends LitElement {
     this._isLoading = true;
     apiFetch<WifiApiResponse>(url, {
       retries: 10,
-      retryDelay: 1000,
+      retryDelay: 2000,
       retryOn: [202, 500, 503],
     })
       .then(response => {

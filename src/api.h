@@ -26,7 +26,11 @@ void handleApiConfigPumpPOST(AsyncWebServerRequest *request, JsonVariant &json);
  */
 void handleApiConfigMqtt(AsyncWebServerRequest *request);
 void handleApiConfigMqttPOST(AsyncWebServerRequest *request, JsonVariant &json);
-
+/**
+ * Read / write wifi config
+ */
+void handleApiConfigWifi(AsyncWebServerRequest *request);
+void handleApiConfigWifiPOST(AsyncWebServerRequest *request, JsonVariant &json);
 /**
  * Read / write time config
  */

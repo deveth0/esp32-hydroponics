@@ -44,7 +44,6 @@
 #include "cfg.h"
 #include "file.h"
 #include "mqtt.h"
-#include "settings.h"
 #include "web.h"
 #include "api.h"
 #include "sensors.h"
