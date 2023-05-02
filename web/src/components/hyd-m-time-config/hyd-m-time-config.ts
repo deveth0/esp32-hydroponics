@@ -63,14 +63,14 @@ export class TimeConfig extends LitElement {
 
   render() {
     return html` <div>
-      <h2 class="mb-6 text-lg font-bold text-gray-300">Config</h2>
+      <h2 class="page-headline">Config</h2>
       <form id="time-config-form" @submit="${this.handleSubmit}">
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Time</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Time</legend>
           ${renderFormInputText("NTP Server", "ntpServer", this._timeConfig?.ntpServer)}
         </fieldset>
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Location</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Location</legend>
           ${renderFormInputNumber("Latitude", "latitude", this._timeConfig?.latitude, 0.01, -90.0, 90)}
           ${renderFormInputNumber("Longitude", "longitude", this._timeConfig?.longitude, 0.01, -90, 90)}
         </fieldset>

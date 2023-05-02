@@ -72,10 +72,10 @@ export class MqttConfig extends LitElement {
 
   render() {
     return html` <div>
-      <h2 class="mb-6 text-lg font-bold text-gray-300">Config</h2>
+      <h2 class="page-headline">Config</h2>
       <form id="mqtt-config-form" @submit="${this.handleSubmit}">
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">MQTT</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">MQTT</legend>
           ${renderFormInputCheckbox("Enable MQTT", "mqttEnabled", this._mqttConfig?.enabled)}
           ${renderFormInputText("MQTT Broker", "mqttBroker", this._mqttConfig?.broker)}
           ${renderFormInputNumber("Port", "mqttPort", this._mqttConfig?.port)}

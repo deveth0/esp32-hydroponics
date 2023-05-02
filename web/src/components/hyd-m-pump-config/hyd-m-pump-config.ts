@@ -79,14 +79,14 @@ export class PumpConfig extends LitElement {
 
   render() {
     return html` <div>
-      <h2 class="mb-6 text-lg font-bold text-gray-300">Config</h2>
+      <h2 class="page-headline">Config</h2>
       <form id="pump-config-form" @submit="${this.handleSubmit}">
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Pump</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Pump</legend>
           ${renderFormInputCheckbox("Enable Pump", "pumpEnabled", this._pumpEnabled)}
         </fieldset>
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Temperature based cycles</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Temperature based cycles</legend>
           <div class="mb-4 grid grid-cols-3">
             <span>Temperature</span>
             <span>Interval (minutes)</span>
@@ -105,7 +105,7 @@ export class PumpConfig extends LitElement {
     return html` <div class="grid grid-cols-3 gap-4">
       <label class="form-input-label" for=${name + "Interval"}>${label}</label>
       <input
-        class="form-input"
+        class="form-input col-span-1"
         id=${name + "Interval"}
         name=${name + "Interval"}
         required
@@ -116,7 +116,7 @@ export class PumpConfig extends LitElement {
         placeholder="Minutes"
       />
       <input
-        class="form-input"
+        class="form-input col-span-1"
         id=${name + "Duration"}
         name=${name + "Duration"}
         required

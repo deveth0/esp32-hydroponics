@@ -47,7 +47,7 @@ export class WifiSsidPicker extends LitElement {
 
   // Render the UI as a function of component state
   render() {
-    return html`
+    return html` <div class=" mb-4">
       <button
         ?disabled=${this._status === WifiApiStatus.INPROGRESS || this._isLoading}
         id="scan"
@@ -55,7 +55,7 @@ export class WifiSsidPicker extends LitElement {
         @click="${this._loadWifiNetworks}"
         type="button"
       >
-        Scan
+        Scan available networks
         ${this._isLoading
           ? html`<svg class="spinner" viewBox="0 0 24 24">
               <use href="#spinner"></use>
@@ -78,7 +78,7 @@ export class WifiSsidPicker extends LitElement {
               </div>`,
             )}
           </div>`}
-    `;
+    </div>`;
   }
 
   private onSelectSSID(ssid: string) {

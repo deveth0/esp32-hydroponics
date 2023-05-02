@@ -93,10 +93,10 @@ export class MqttConfig extends LitElement {
 
   render() {
     return html` <div>
-      <h2 class="mb-6 text-lg font-bold text-gray-300">Config</h2>
+      <h2 class="page-headline">Config</h2>
       <form id="wifi-config-form" @submit="${this.handleSubmit}">
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Wifi</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Wifi</legend>
           ${renderFormInputText("SSID", "wifiSSID", this._wifiConfig?.wifi.ssid)}
           <hyd-m-wifi-ssid-picker
             @ssid-selected-event="${(e: CustomEvent<SSIDSelectedEvent>) => {
@@ -104,157 +104,148 @@ export class MqttConfig extends LitElement {
             }}"
           ></hyd-m-wifi-ssid-picker>
           ${renderFormInputText("Password", "wifiPwd", this._wifiConfig?.wifi.pwd, true)}
-          <fieldset class="mb-4">
-            <legend class="block text-gray-300 text-sm font-bold mb-2">Static IP (leave at 0.0.0.0 for DHCP)</legend>
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="I0"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.staticIp[0]}"
-            />
-            .
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="I1"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.staticIp[1]}"
-            />
-            .
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="I2"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.staticIp[2]}"
-            />
-            .
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="I3"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.staticIp[3]}"
-            />
+          <fieldset class="form-field">
+            <legend class="form-input-label mb-4">Static IP (leave at 0.0.0.0 for DHCP)</legend>
+            <div class="flex col-span-3 grid grid-cols-4">
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="I0"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.staticIp[0]}"
+              />
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="I1"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.staticIp[1]}"
+              />
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="I2"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.staticIp[2]}"
+              />
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="I3"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.staticIp[3]}"
+              />
+            </div>
           </fieldset>
-          <fieldset class="mb-4">
-            <legend class="block text-gray-300 text-sm font-bold mb-2">Static gateway</legend>
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="G0"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.gateway[0]}"
-            />
-            .
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="G1"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.gateway[1]}"
-            />
-            .
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="G2"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.gateway[2]}"
-            />
-            .
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="G3"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.gateway[3]}"
-            />
+          <fieldset class="form-field">
+            <legend class="form-input-label mb-4">Static gateway</legend>
+            <div class="flex col-span-3 grid grid-cols-4">
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="G0"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.gateway[0]}"
+              />
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="G1"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.gateway[1]}"
+              />
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="G2"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.gateway[2]}"
+              />
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="G3"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.gateway[3]}"
+              />
+            </div>
           </fieldset>
-          <fieldset class="mb-4">
-            <legend class="block text-gray-300 text-sm font-bold mb-2">Static subnet mask</legend>
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="S0"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.subnet[0]}"
-            />
-            .
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="S1"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.subnet[1]}"
-            />
-            .
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="S2"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.subnet[2]}"
-            />
-            .
-            <input
-              class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              max="255"
-              min="0"
-              name="S3"
-              required
-              type="number"
-              value="${this._wifiConfig?.wifi.subnet[3]}"
-            />
+          <fieldset class="form-field">
+            <legend class="form-input-label mb-4">Static subnet mask</legend>
+            <div class="flex col-span-3 grid grid-cols-4">
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="S0"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.subnet[0]}"
+              />
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="S1"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.subnet[1]}"
+              />
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="S2"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.subnet[2]}"
+              />
+              <input
+                class="form-input col-span-1"
+                max="255"
+                min="0"
+                name="S3"
+                required
+                type="number"
+                value="${this._wifiConfig?.wifi.subnet[3]}"
+              />
+            </div>
           </fieldset>
         </fieldset>
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">MDNS</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">MDNS</legend>
           ${renderFormInputText("MDNS Address", "mdnsAddress", this._wifiConfig?.mdns.address)}
         </fieldset>
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Accesspoint</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Accesspoint</legend>
           ${renderFormInputText("Accesspoint SSID", "apSSID", this._wifiConfig?.ap.ssid)}
           ${renderFormInputText("Password", "apPwd", this._wifiConfig?.ap.pwd, true)}
           ${renderFormInputCheckbox("Hide AP", "apHideAp", this._wifiConfig?.ap.hideAp)}
           ${renderFormInputNumber("Wifi Channel", "apChannel", this._wifiConfig?.ap.channel, 1, 1, 13)}
-          <div class="mb-4">
-            <label class="block text-gray-300 text-sm font-bold mb-2" for="apOpensOn"> AP opens </label>
-            <div class="relative">
-              <select
-                class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="apOpensOn"
-                name="apOpensOn"
-              >
-                <option value="0">No connection after boot</option>
-                <option value="1">Disconnected</option>
-                <option value="2">Always</option>
-                <option value="3">Never (not recommended)</option>
-              </select>
-            </div>
+          <div class="form-field">
+            <label class="form-input-label" for="apOpensOn"> AP opens </label>
+            <select class="form-input" id="apOpensOn" name="apOpensOn">
+              <option value="0">No connection after boot</option>
+              <option value="1">Disconnected</option>
+              <option value="2">Always</option>
+              <option value="3">Never (not recommended)</option>
+            </select>
           </div>
         </fieldset>
         ${renderButton("Save", this._isLoading, this._wifiConfig === undefined)}

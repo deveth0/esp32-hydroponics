@@ -113,10 +113,10 @@ export class SensorsConfig extends LitElement {
 
   render() {
     return html` <div>
-      <h2 class="mb-6 text-lg font-bold text-gray-300">Config</h2>
+      <h2 class="page-headline">Config</h2>
       <form id="sensors-config-form" @submit="${this.handleSubmit}">
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">PH calibration</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">PH calibration</legend>
           ${renderFormInputNumber(
             "PH Acid Voltage (4.0 pH)",
             "phAcidVoltage",
@@ -132,9 +132,8 @@ export class SensorsConfig extends LitElement {
             0,
           )}
         </fieldset>
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Temperature Offsets</legend>
-          <label for="temperatureAdjustment">Temperature Adjustment</label>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Temperature Offsets</legend>
           ${renderFormInputNumber(
             "Temperature Adjustment",
             "temperatureAdjustment",
@@ -150,14 +149,14 @@ export class SensorsConfig extends LitElement {
             0,
           )}
         </fieldset>
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Tank</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Tank</legend>
           ${renderFormInputNumber("Tank Width", "tankWidth", this._sensorsConfig?.tank.width, 1, 1)}
           ${renderFormInputNumber("Tank Height", "tankHeight", this._sensorsConfig?.tank.height, 1, 1)}
           ${renderFormInputNumber("Tank Length", "tankLength", this._sensorsConfig?.tank.length, 1, 1)}
         </fieldset>
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Pump Tank Level Configs</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Pump Tank Level Configs</legend>
           ${renderFormInputNumber(
             "Min Water Level (cm)",
             "minWaterLevel",
@@ -173,8 +172,8 @@ export class SensorsConfig extends LitElement {
             1,
           )}
         </fieldset>
-        <fieldset class="border border-solid border-gray-300 p-3">
-          <legend class="text-sm">Measurements</legend>
+        <fieldset class="form-fieldset">
+          <legend class="form-fieldset-legend">Measurements</legend>
           ${renderFormInputNumber(
             "Number of measurements",
             "numberMeasurements",

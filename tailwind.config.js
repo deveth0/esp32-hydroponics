@@ -8,7 +8,7 @@ const config = {
     },
     extend: {
       colors: {
-        background: "#121212",
+        background: "#f0f0f0",
         primary: "#31dbda",
         secondary: "#db31db",
       },

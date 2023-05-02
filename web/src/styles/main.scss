@@ -5,7 +5,7 @@
 
 @layer base{
   body {
-    @apply m-8 bg-background text-white;
+    @apply bg-background;
   }
 
   svg {
@@ -16,18 +16,30 @@
     @apply fill-secondary;
   }
   * {
-    border: inherit;
+    border: initial;
   }
 }
 
 @layer components {
 
+  .page-content {
+    @apply mx-4 md:mx-8 mb-8;
+  }
+
+  .page-headline {
+    @apply mb-6 text-lg font-bold;
+  }
+
   .link-primary {
     @apply block w-full hover:text-secondary;
   }
 
+  .link-button {
+    @apply flex shadow bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded;
+  }
+
   .btn-primary {
-    @apply flex shadow bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded  disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200;
+    @apply flex shadow bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200;
   }
 
   .spinner {
@@ -35,13 +47,25 @@
   }
 
   .card {
-    @apply m-4 border rounded p-4 bg-gray-700;
+    @apply m-4 border rounded p-4 bg-white shadow-lg;
+  }
+
+  .form-fieldset {
+    @apply border border-solid border-gray-300 p-3 mb-8 bg-white shadow-lg ;
+  }
+
+  .form-fieldset-legend {
+    @apply font-bold;
+  }
+
+  .form-field {
+    @apply w-full md:w-3/4 mb-4 flex flex-col gap-2 md:grid md:grid-cols-4 md:gap-0;
   }
 
   .form-input-label {
-    @apply block text-gray-300 text-sm font-bold mr-10;
+    @apply col-span-1 text-sm font-bold mr-8;
   }
   .form-input {
-    @apply shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none;
+    @apply col-span-3 shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none;
   }
 }
