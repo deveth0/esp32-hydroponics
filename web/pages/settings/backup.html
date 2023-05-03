@@ -7,15 +7,17 @@
 
 <body>
 <hyd-m-header></hyd-m-header>
-<h3>Backup & Restore</h3>
-<a class="btn lnk" download="cfg" href="/settings/backup/cfg.json" id="bckpresets">Backup configuration</a><br>
-<div>Restore configuration<br><input accept=".json" name="data2" type="file">
+
+<div class="page-content">
+    <h2 class="page-headline">Backup & Restore</h2>
+    <a class="link-button" download href="/settings/backup/cfg.json">Backup configuration</a><br>
+<!--<div>Restore configuration<br><input accept=".json" name="data2" type="file">
     <button onclick="(()=>alert('TODO'))()" type="button">Upload</button>
     <br></div>
 <div style="color: #fa0;">&#9888; Restoring presets/configuration will OVERWRITE your current presets/configuration.<br>
     Incorrect configuration may require a factory reset or re-flashing of your ESP.
-</div>
-For security reasons, passwords are not backed up.
+</div>-->
+    For security reasons, passwords are not backed up.</div>
 </body>
 
 </html>
