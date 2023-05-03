@@ -47,7 +47,7 @@
   }
 
   .card {
-    @apply m-4 border rounded p-4 bg-white shadow-lg;
+    @apply mb-4 md:mb-8 border rounded p-4 bg-white shadow-lg;
   }
 
   .form-fieldset {

@@ -36,6 +36,7 @@ void initServer()
   server.serveStatic("/settings.html", HYDROPONICS_FS, "/settings.html");
   server.serveStatic("/settings/wifi.html", HYDROPONICS_FS, "/settings/wifi.html");
   server.serveStatic("/settings/sensors.html", HYDROPONICS_FS, "/settings/sensors.html");
+  server.serveStatic("/settings/pump.html", HYDROPONICS_FS, "/settings/pump.html");
   server.serveStatic("/settings/mqtt.html", HYDROPONICS_FS, "/settings/mqtt.html");
   server.serveStatic("/settings/time.html", HYDROPONICS_FS, "/settings/time.html");
   server.serveStatic("/settings/backup.html", HYDROPONICS_FS, "/settings/backup.html");

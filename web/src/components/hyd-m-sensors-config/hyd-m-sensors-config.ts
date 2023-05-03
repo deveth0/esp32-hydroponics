@@ -151,9 +151,9 @@ export class SensorsConfig extends LitElement {
         </fieldset>
         <fieldset class="form-fieldset">
           <legend class="form-fieldset-legend">Tank</legend>
-          ${renderFormInputNumber("Tank Width", "tankWidth", this._sensorsConfig?.tank.width, 1, 1)}
-          ${renderFormInputNumber("Tank Height", "tankHeight", this._sensorsConfig?.tank.height, 1, 1)}
-          ${renderFormInputNumber("Tank Length", "tankLength", this._sensorsConfig?.tank.length, 1, 1)}
+          ${renderFormInputNumber("Tank Width", "tankWidth", this._sensorsConfig?.tank.width, 0.5, 1)}
+          ${renderFormInputNumber("Tank Height", "tankHeight", this._sensorsConfig?.tank.height, 0.5, 1)}
+          ${renderFormInputNumber("Tank Length", "tankLength", this._sensorsConfig?.tank.length, 0.5, 1)}
         </fieldset>
         <fieldset class="form-fieldset">
           <legend class="form-fieldset-legend">Pump Tank Level Configs</legend>
