@@ -1,4 +1,5 @@
 # esp32-hydroponics
+<img src="https://user-images.githubusercontent.com/1718655/235879466-093d8c52-8575-4717-91ee-c37e92816acd.png" width="256"/>
 
 More or less advanced project to build a hydroponics system with all necessary (or interesting) sensors, MQTT integration and a web-interface. 
 
