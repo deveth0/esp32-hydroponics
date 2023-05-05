@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "fetch-retry": "^5.0.4",
-    "lit": "^2.7.3",
+    "lit": "^2.7.4",
     "svg-transform-loader": "^2.0.13",
     "svgo-loader": "^4.0.0"
   }
