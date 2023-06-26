@@ -26,6 +26,8 @@ private:
   bool phMeasure;
   long timer;
 
+
+  float readWaterTemperatureValue();
   float readPhValue();
   float readTDSValue();
 };

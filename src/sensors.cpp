@@ -61,20 +61,16 @@ void SensorsHandler::handleSensors()
   if (timer - lastTemperatureMeasure >= temperatureInterval * 1000)
   {
     lastTemperatureMeasure = timer;
-    float temperatureC = 0;
-
-    for (int i = 0; i < numberMeasurements; i++)
-    {
-      dallasTemperature.requestTemperatures();
-      temperatureC += dallasTemperature.getTempCByIndex(0);
-    }
-
-    temperatureC = roundf((temperatureC / numberMeasurements) * 10) / 10;
-    // calibration
-    temperatureC = temperatureC + waterTempAdjustment;
+    float temperatureC = readWaterTemperatureValue();
 
     if (temperatureC != lastWaterTemperature)
     {
+      // retry if difference is too large to smooth curve
+      if (fabs(lastWaterTemperature - temperatureC) > 1)
+      {
+        temperatureC = readWaterTemperatureValue();
+      }
+
       DEBUG_PRINTF("new water temperature %f °C\n", temperatureC);
       publishMqtt("water", String(temperatureC, 2).c_str());
       lastWaterTemperature = temperatureC;
@@ -137,6 +133,10 @@ void SensorsHandler::handleSensors()
         publishMqtt("waterLevel", String(lastWaterLevel).c_str());
       }
     }
+    else
+    {
+      sensorsStatus = INVALID_DISTANCE;
+    }
   }
 
   if (timer - lastPhTdsMeasure >= phTdsInterval * 1000)
@@ -198,7 +198,6 @@ void SensorsHandler::handleSensors()
           publishMqtt("tds", String(tdsValue, 2).c_str());
           publishMqtt("tdsVoltage", String(lastTdsVoltage, 2).c_str());
           publishMqtt("ec", String(lastEc * 2, 2).c_str());
-          
         }
         phMeasure = true;
         digitalWrite(TDS_MOSFET_PIN, LOW);
@@ -233,4 +232,18 @@ float SensorsHandler::readTDSValue()
 
   tdsValue = roundf(tdsValue / 10) * 10;
   return tdsValue;
+}
+
+float SensorsHandler::readWaterTemperatureValue()
+{
+  float temperatureC = 0;
+  for (int i = 0; i < numberMeasurements; i++)
+  {
+    dallasTemperature.requestTemperatures();
+    temperatureC += dallasTemperature.getTempCByIndex(0);
+  }
+
+  temperatureC = roundf((temperatureC / numberMeasurements) * 10) / 10;
+  // calibration
+  return temperatureC + waterTempAdjustment;
 }

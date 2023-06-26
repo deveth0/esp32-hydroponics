@@ -11,6 +11,7 @@ export enum ConnectionStatus {
 
 export enum PumpStatus {
   UNKNOWN = 0,
+  NIGHTTIME = 100,
   SCHEDULED_RUN = 200,
   SCHEDULED_STOP = 201,
   MANUAL_RUN = 202,
@@ -23,7 +24,7 @@ export interface PumpStatusResponse {
   status: PumpStatus;
   enabled: boolean;
   running: boolean;
-  runUntil: number;
+  runningFor: number;
   lastPumpStartTankLevel: number;
   lastPumpEndTankLevel: number;
 }

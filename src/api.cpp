@@ -119,7 +119,7 @@ void handleApiPumpPOST(AsyncWebServerRequest *request, JsonVariant &json)
   doc["status"] = pumpStatus;
   doc["enabled"] = pumpEnabled;
   doc["running"] = PumpHandler::instance().pumpRunning();
-  doc["runUntil"] = PumpHandler::instance().pumpRunUntil;
+  doc["runningFor"] = PumpHandler::instance().pumpRunUntil() > 0 ? millis() - PumpHandler::instance().pumpRunUntil() : 0;
 
   String data;
   serializeJson(doc, data);
@@ -294,12 +294,12 @@ void handleApiConfigMqttPOST(AsyncWebServerRequest *request, JsonVariant &json)
 void handleApiStatus(AsyncWebServerRequest *request)
 {
 
-  DynamicJsonDocument doc(1024);
+  DynamicJsonDocument doc(1536);
 
   doc["pump"]["status"] = pumpStatus;
   doc["pump"]["enabled"] = pumpEnabled;
   doc["pump"]["running"] = PumpHandler::instance().pumpRunning();
-  doc["pump"]["runUntil"] = PumpHandler::instance().pumpRunUntil;
+  doc["pump"]["runningFor"] = PumpHandler::instance().pumpRunUntil() > 0 ? millis() - PumpHandler::instance().pumpRunUntil() : 0;
   doc["pump"]["lastPumpStartTankLevel"] = PumpHandler::instance().pumpStartTankLevel();
   doc["pump"]["lastPumpEndTankLevel"] = PumpHandler::instance().pumpEndTankLevel();
   doc["wifiStatus"] = HYDROPONICS_CONNECTED ? F("Connected") : F("Disconnected");
@@ -309,11 +309,15 @@ void handleApiStatus(AsyncWebServerRequest *request)
   char timeString[sizeof "yyyy-mm-ddThh:mm:ssZ"];
   getTimeString(timeString, sizeof(timeString));
   doc["date"] = timeString;
+  doc["uptime"] = millis() / 1000 + rolloverMillis * 4294967;
 
   JsonObject ntp = doc.createNestedObject("ntp");
   ntp["connected"] = ntpConnected;
-  ntp["lastSyncTime"] = ntpLastSyncTime;
-  ntp["packetSendTime"] = ntpPacketSentTime;
+  getTimeString(ntpLastSyncTime, timeString, sizeof(timeString));
+  ntp["lastSyncTime"] = timeString;
+  getTimeString(ntpPacketSentTime, timeString, sizeof(timeString));
+  ntp["packetSendTime"] = timeString;
+  ntp["status"] = ntpStatus;
 
   if (sunset != 0 && sunrise != 0)
   {
@@ -325,6 +329,7 @@ void handleApiStatus(AsyncWebServerRequest *request)
   }
 
   JsonObject sensors = doc.createNestedObject("sensors");
+  sensors["status"] = sensorsStatus;
 
   long timer = millis();
   long lastUpdate = timer - min({lastDistanceMeasure, lastTemperatureMeasure, lastPhTdsMeasure});
@@ -335,10 +340,10 @@ void handleApiStatus(AsyncWebServerRequest *request)
   addSensorStatus(sensors, F("volume"), F("L"), lastVolume != __FLT_MAX__ ? lastVolume : 0);
   addSensorStatus(sensors, F("waterLevel"), F("%"), lastWaterLevel != __INT_MAX__ ? lastWaterLevel : 0);
   addSensorStatus(sensors, F("pressure"), F("Pa"), lastPressure != __FLT_MAX__ ? lastPressure : 0);
-  addSensorStatus(sensors, F("temperature"), F("°C"), lastTemperature != __FLT_MAX__ ? lastTemperature : 0);
-  addSensorStatus(sensors, F("waterTemperature"), F("°C"), lastWaterTemperature != __FLT_MAX__ ? lastWaterTemperature : 0);
+  addSensorStatus(sensors, F("temperature"), F("°C"), lastTemperature != __FLT_MAX__ ? String(lastTemperature, 2) : "0");
+  addSensorStatus(sensors, F("waterTemperature"), F("°C"), lastWaterTemperature != __FLT_MAX__ ? String(lastWaterTemperature, 2) : "0");
   addSensorStatus(sensors, F("ph"), F("pH"), lastPh != __FLT_MAX__ ? lastPh : 0);
-  addSensorStatus(sensors, F("phVoltage"), F("V"), lastPhVoltage);
+  addSensorStatus(sensors, F("phVoltage"), F("V"), String(lastPhVoltage, 2));
   addSensorStatus(sensors, F("tds"), F("ppm"), lastTds != __FLT_MAX__ ? lastTds : 0);
   addSensorStatus(sensors, F("ec"), F("ms/cm"), lastEc != __FLT_MAX__ ? lastEc : 0);
 
@@ -397,8 +402,8 @@ void handleApiConfigTime(AsyncWebServerRequest *request)
   DynamicJsonDocument doc(1024);
 
   doc["ntpServer"] = ntpServerName;
-  doc["longitude"] = longitude;
-  doc["latitude"] = latitude;
+  doc["longitude"] = String(longitude, 2);
+  doc["latitude"] = String(latitude, 2);
 
   String data;
   serializeJson(doc, data);

@@ -42,11 +42,6 @@ export class StatusCard extends LitElement {
       waterLevelIcon = "#humidity_mid";
     if (this._statusResponse.sensors.waterLevel.value > 75) waterLevelIcon = "#humidity_high";
 
-    const pumpRunUntilContent =
-      this._statusResponse.pump.runUntil > 0
-        ? html`(until: ${new Date(this._statusResponse.pump.runUntil).toString()})`
-        : nothing;
-
     return html` <div class="card">
       <div class="flex flex-col">
         <span class="block"
@@ -73,7 +68,10 @@ export class StatusCard extends LitElement {
         <svg class="h-6 mr-4" viewBox="0 96 960 960">
           <use href="${fanIcon}"></use>
         </svg>
-        Pump: ${this._statusResponse.pump.running} ${pumpRunUntilContent}
+        ${this._statusResponse.pump.running
+          ? html`Pump running for ${this._statusResponse.pump.runningFor / 1000} seconds`
+          : html`Pump not running`}
+        ${this._statusResponse.pump.enabled ? nothing : html`PUMP DISABLED`}
       </div>
       <div class="flex">
         <svg class="h-6 mr-4" viewBox="0 96 960 960">

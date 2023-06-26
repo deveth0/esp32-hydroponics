@@ -38,8 +38,10 @@ void Hydroponics::loop()
 
   if (lastMqttReconnectAttempt > millis())
   {
+    rolloverMillis++;
     lastMqttReconnectAttempt = 0;
     ntpLastSyncTime = 0;
+    ntpLastSync = 0;
   }
   if (millis() - lastMqttReconnectAttempt > 30000 || lastMqttReconnectAttempt == 0)
   { // lastMqttReconnectAttempt==0 forces immediate broadcast

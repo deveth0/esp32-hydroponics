@@ -18,10 +18,11 @@ public:
   bool pumpRunning();
   int pumpStartTankLevel();
   int pumpEndTankLevel();
-  long pumpRunUntil = 0;
+  long pumpRunUntil();
 
 private:
   long lastPumpRun = 0;
+  long _pumpRunUntil = 0;
   int _pumpStartTankLevel = 0;
   int _pumpEndTankLevel = 0;
   long timer;

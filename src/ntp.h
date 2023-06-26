@@ -12,4 +12,5 @@ void getTimeString(time_t time, char *out, size_t len);
 void checkTimers();
 void calculateSunriseAndSunset();
 boolean isDaytime();
+
 #endif

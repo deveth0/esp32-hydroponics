@@ -129,11 +129,20 @@ HYDROPONICS_GLOBAL IPAddress staticSubnet _INIT_N(((255, 255, 255, 0))); // most
 // dns server
 HYDROPONICS_GLOBAL DNSServer dnsServer;
 
+enum NTPStatus
+{
+  SYNCED = 100,
+  NTP_PACKET_SEND = 200,
+  INVALID_NTP_PACKET = 201,
+  INVALID_DEP_SEC = 202
+};
 // network time
 HYDROPONICS_GLOBAL bool ntpConnected _INIT(false);
 HYDROPONICS_GLOBAL time_t localTime _INIT(0);
-HYDROPONICS_GLOBAL unsigned long ntpLastSyncTime _INIT(999000000L);
-HYDROPONICS_GLOBAL unsigned long ntpPacketSentTime _INIT(999000000L);
+HYDROPONICS_GLOBAL unsigned long ntpLastSync _INIT(999000000L);
+HYDROPONICS_GLOBAL unsigned long ntpPacketSent _INIT(999000000L);
+HYDROPONICS_GLOBAL time_t long ntpLastSyncTime _INIT(0);
+HYDROPONICS_GLOBAL time_t long ntpPacketSentTime _INIT(0);
 HYDROPONICS_GLOBAL IPAddress ntpServerIP;
 HYDROPONICS_GLOBAL uint16_t ntpLocalPort _INIT(2390);
 HYDROPONICS_GLOBAL uint16_t rolloverMillis _INIT(0);
@@ -142,6 +151,7 @@ HYDROPONICS_GLOBAL float latitude _INIT(0.0);
 HYDROPONICS_GLOBAL time_t sunrise _INIT(0);
 HYDROPONICS_GLOBAL time_t sunset _INIT(0);
 HYDROPONICS_GLOBAL Toki toki _INIT(Toki());
+HYDROPONICS_GLOBAL NTPStatus ntpStatus;
 
 HYDROPONICS_GLOBAL WiFiUDP ntpUdp;
 
@@ -186,6 +196,11 @@ HYDROPONICS_GLOBAL char mqttClientID[41] _INIT("");                  // override
 HYDROPONICS_GLOBAL uint16_t mqttPort _INIT(1883);
 #define HYDROPONICS_MQTT_CONNECTED (mqtt != nullptr && mqtt->connected())
 
+
+enum SensorsStatus {
+  INVALID_DISTANCE = 500,
+};
+HYDROPONICS_GLOBAL SensorsStatus sensorsStatus;
 HYDROPONICS_GLOBAL bool pumpEnabled _INIT(true);
 HYDROPONICS_GLOBAL u_int minWaterLevelCm _INIT(5);           // min water level in cm
 HYDROPONICS_GLOBAL u_int maxWaterLevelDifferenceCm _INIT(1); // max difference between starting to pump to current level before emergency shutdown

@@ -20,6 +20,11 @@ int PumpHandler::pumpEndTankLevel()
   return _pumpEndTankLevel;
 }
 
+long PumpHandler::pumpRunUntil()
+{
+  return _pumpRunUntil;
+}
+
 void PumpHandler::manualPumpRun(int duration)
 {
   pumpStatus = MANUAL_RUN;
@@ -51,20 +56,20 @@ void PumpHandler::handlePump()
     if (fillHeight < minWaterLevelCm)
     {
       // not enough water
-      disablePump();
       pumpStatus = NOT_ENOUGH_WATER_STOP;
+      disablePump();
       pumpEnabled = false;
       return;
     }
   }
 
   // emptying run, no need to do anything
-  if (pumpRunUntil == -1)
+  if (_pumpRunUntil == -1)
     return;
 
-  if (pumpRunUntil > 0)
+  if (_pumpRunUntil > 0)
   {
-    if (pumpRunUntil <= millis())
+    if (_pumpRunUntil <= millis())
     {
       disablePump();
       pumpStatus = SCHEDULED_STOP;
@@ -142,7 +147,7 @@ void PumpHandler::disablePump()
 
   _pumpRunning = false;
   publishMqtt("pump", "OFF");
-  pumpRunUntil = 0;
+  _pumpRunUntil = 0;
   _pumpEndTankLevel = tankHeight - lastDistance;
 }
 
@@ -167,11 +172,11 @@ void PumpHandler::enablePump(long duration)
   lastPumpRun = millis();
   if (duration == -1)
   {
-    pumpRunUntil = -1;
+    _pumpRunUntil = -1;
   }
   else
   {
-    pumpRunUntil = lastPumpRun + duration;
+    _pumpRunUntil = lastPumpRun + duration;
   }
   _pumpStartTankLevel = fillHeight;
   _pumpEndTankLevel = -1;

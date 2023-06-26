@@ -22,7 +22,7 @@ export class PumpConfig extends LitElement {
     return html` <div class="mb-12">
       <h2 class="page-headline">Controls</h2>
       ${this._pumpStatus?.enabled
-        ? html`<h4>Pump running until ${new Date(this._pumpStatus.runUntil).toString()}</h4>`
+        ? html`<h4>Pump running for ${this._pumpStatus.runningFor / 1000} seconds)}</h4>`
         : html`<div class="flex space-x-4">
             <button
               class="btn-primary"

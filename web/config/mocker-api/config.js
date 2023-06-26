@@ -9,7 +9,7 @@ const proxy = {
         status: 200,
         enabled: true,
         running: true,
-        runUntil: new Date(Date.now() + 1000000).toISOString(),
+        runningFor: 4000,
         lastPumpStartTankLevel: 10,
         lastPumpEndTankLevel: 8,
       },
@@ -112,7 +112,7 @@ const proxy = {
   },
   "GET /api/config/pump.json": (req, res) => {
     return res.json({
-      pumpEnabled: true,
+      pumpEnabled: false,
       pumpConfig: {
         le10: {
           interval: 300,

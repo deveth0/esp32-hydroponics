@@ -33,6 +33,6 @@ export function renderFormInputNumber(
 export function renderFormInputCheckbox(label: string, name: string, value?: boolean): TemplateResult {
   return html` <div class="form-field">
     <label class="block text-grey-700 text-sm font-bold mb-2 mr-10" for="${name}">${label}</label>
-    <input type="checkbox" checked="${value}" id="${name}" name="${name}" />
+    <input type="checkbox" ?checked="${value}" id="${name}" name="${name}" />
   </div>`;
 }

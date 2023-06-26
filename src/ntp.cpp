@@ -3,8 +3,7 @@
 /*
  * Acquires time from NTP server
  */
-// #define WLED_DEBUG_NTP
-#define NTP_SYNC_INTERVAL 42000UL // Get fresh NTP time about twice per day
+#define NTP_SYNC_INTERVAL 3600UL // Get fresh NTP time once an hour
 
 void initNtp()
 {
@@ -37,11 +36,7 @@ void sendNTPPacket()
 {
   if (!ntpServerIP.fromString(ntpServerName)) // see if server is IP or domain
   {
-#ifdef ESP8266
-    WiFi.hostByName(ntpServerName, ntpServerIP, 750);
-#else
     WiFi.hostByName(ntpServerName, ntpServerIP);
-#endif
   }
 
   DEBUG_PRINTLN(F("send NTP"));
@@ -61,13 +56,17 @@ void sendNTPPacket()
   ntpUdp.beginPacket(ntpServerIP, 123); // NTP requests are to port 123
   ntpUdp.write(pbuf, NTP_PACKET_SIZE);
   ntpUdp.endPacket();
+  ntpStatus = NTP_PACKET_SEND;
 }
 
 bool checkNTPResponse()
 {
   int cb = ntpUdp.parsePacket();
   if (!cb)
+  {
+    ntpStatus = INVALID_NTP_PACKET;
     return false;
+  }
 
   uint32_t ntpPacketReceivedTime = millis();
   DEBUG_PRINT(F("NTP recv, l="));
@@ -78,10 +77,13 @@ bool checkNTPResponse()
   Toki::Time arrived = toki.fromNTP(pbuf + 32);
   Toki::Time departed = toki.fromNTP(pbuf + 40);
   if (departed.sec == 0)
+  {
+    ntpStatus = INVALID_DEP_SEC;
     return false;
+  }
   // basic half roundtrip estimation
   uint32_t serverDelay = toki.msDifference(arrived, departed);
-  uint32_t offset = (ntpPacketReceivedTime - ntpPacketSentTime - serverDelay) >> 1;
+  uint32_t offset = (ntpPacketReceivedTime - ntpPacketSent - serverDelay) >> 1;
 
   toki.adjust(departed, offset);
   toki.setTime(departed, TOKI_TS_NTP);
@@ -89,6 +91,7 @@ bool checkNTPResponse()
   // if time changed re-calculate sunrise/sunset
   updateLocalTime();
   calculateSunriseAndSunset();
+  ntpStatus = SYNCED;
   return true;
 }
 
@@ -107,16 +110,18 @@ void handleTime()
 
 void handleNetworkTime()
 {
-  if (ntpConnected && millis() - ntpLastSyncTime > (1000 * NTP_SYNC_INTERVAL) && HYDROPONICS_CONNECTED)
+  if (ntpConnected && millis() - ntpLastSync > (1000 * NTP_SYNC_INTERVAL) && HYDROPONICS_CONNECTED)
   {
-    if (millis() - ntpPacketSentTime > 10000)
+    if (millis() - ntpPacketSent > 10000)
     {
       sendNTPPacket();
-      ntpPacketSentTime = millis();
+      ntpPacketSent = millis();
+      ntpPacketSentTime = localTime;
     }
     if (checkNTPResponse())
     {
-      ntpLastSyncTime = millis();
+      ntpLastSync = millis();
+      ntpLastSyncTime = localTime;
     }
   }
 }
